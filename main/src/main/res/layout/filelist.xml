@@ -1,0 +1,57 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+
+        <Button android:id="@+id/save_button"
+            android:text="Select Folder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:minWidth="64dip" />
+        <Button android:id="@+id/Location_button"
+            android:text="Select File"
+            android:layout_width="wrap_content"
+            android:paddingLeft="10dip"
+            android:layout_gravity="right"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+
+            android:minWidth="64dip" />
+
+        <Button android:id="@+id/Location_button_libpcap"
+            android:text="Select File"
+            android:layout_width="wrap_content"
+            android:paddingLeft="10dip"
+            android:layout_gravity="right"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+
+            android:minWidth="64dip" />
+    </LinearLayout>
+
+    <!-- The frame layout is here since we will be showing either
+    the empty view or the list view.  -->
+    <FrameLayout
+        android:layout_width="fill_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1" >
+        <!-- Here is the list. Since we are using a ListActivity, we
+             have to call it "@android:id/list" so ListActivity will
+             find it -->
+        <ListView android:id="@android:id/list"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:fastScrollEnabled="true"
+            android:drawSelectorOnTop="false"/>
+
+        <!-- Here is the view to show if the list is empty -->
+
+
+    </FrameLayout>
+</LinearLayout>

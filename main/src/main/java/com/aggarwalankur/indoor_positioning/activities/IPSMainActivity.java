@@ -9,7 +9,6 @@ import android.view.View;
 import android.widget.Button;
 
 import com.aggarwalankur.indoor_positioning.R;
-import com.nononsenseapps.filepicker.FilePickerActivity;
 
 public class IPSMainActivity extends AppCompatActivity implements View.OnClickListener {
 
