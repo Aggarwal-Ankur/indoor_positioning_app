@@ -19,7 +19,7 @@ public class TrainingSettings extends AppCompatActivity implements View.OnClickL
     private static final int CODE_SD = 0;
 
     private TextView mMapFile;
-    private Button mMapFileSelector;
+    private Button mMapFileSelector, mAddAnchorsButton, mTrainWifiButton;
     private EditText mMapHeight, mMapWidth, mMapBearing, mStrideLength;
 
 
@@ -32,7 +32,13 @@ public class TrainingSettings extends AppCompatActivity implements View.OnClickL
         mMapFile = (TextView) findViewById(R.id.map_file_name);
 
         mMapFileSelector = (Button) findViewById(R.id.btn_select_mapfile);
+        mAddAnchorsButton = (Button) findViewById(R.id.btn_add_anchors);
+        mTrainWifiButton = (Button) findViewById(R.id.btn_train_wifi);
+
+
         mMapFileSelector.setOnClickListener(this);
+        mAddAnchorsButton.setOnClickListener(this);
+        mTrainWifiButton.setOnClickListener(this);
 
         mMapHeight = (EditText) findViewById(R.id.map_height);
         mMapWidth = (EditText) findViewById(R.id.map_width);
@@ -61,6 +67,16 @@ public class TrainingSettings extends AppCompatActivity implements View.OnClickL
                         "/sdcard/");
                 startActivityForResult(filePickerIntent, IConstants.FILE_PICKER_CONSTANTS.PICK_FILE);
                 break;
+
+            case R.id.btn_add_anchors:
+                //Intent to map draw activity
+
+                break;
+
+            case R.id.btn_train_wifi :
+                //Intent to select training Wi-Fi's
+
+                break;
         }
     }
 
@@ -70,7 +86,7 @@ public class TrainingSettings extends AppCompatActivity implements View.OnClickL
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if ((requestCode == IConstants.FILE_PICKER_CONSTANTS.SAVE_FILE) && (resultCode == RESULT_OK)) {
         } else if ((requestCode == IConstants.FILE_PICKER_CONSTANTS.PICK_FILE) && (resultCode == RESULT_OK)) {
-            Toast.makeText(this, "File Selected: " + data.getStringExtra(FilePickerActivity.EXTRA_FILE_PATH), Toast.LENGTH_LONG).show();
+            mMapFile.setText("Map File : "+data.getStringExtra(FilePickerActivity.EXTRA_FILE_PATH));
         }
     }
 }

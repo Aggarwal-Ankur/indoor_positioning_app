@@ -15,7 +15,7 @@
 
     <style name="lable_name_style">
         <item name="android:padding">1dip</item>
-        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_weight">1</item>
         <item name="android:textColor">#EE001111</item>
@@ -23,10 +23,16 @@
 
     <style name="edittext_style">
         <item name="android:padding">1dip</item>
-        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_margin">2dip</item>
+        <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_weight">1</item>
-        <item name="android:textColor">#FFFFFFFF</item>
+        <item name="android:textColor">#FF001111</item>
+        <item name="android:editable">true</item>
+        <item name="android:background">@color/material_grey_300</item>
+        <item name="android:inputType">number</item>
+        <item name="android:maxLength">5</item>
+        <item name="android:maxLines">1</item>
     </style>
 
 

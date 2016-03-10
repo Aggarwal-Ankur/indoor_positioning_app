@@ -20,8 +20,7 @@
         </activity>
         <activity
             android:name=".activities.TrainingSettings"
-            android:label="@string/title_activity_training_settings"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:label="@string/title_activity_training_settings"></activity>
 
         <activity
             android:name="com.aggarwalankur.indoor_positioning.activities.FilePickerActivity"
