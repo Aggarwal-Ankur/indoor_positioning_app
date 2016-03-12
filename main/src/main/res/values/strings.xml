@@ -14,5 +14,7 @@
     <string name="save_file_message">Setting file name(Extension not required):</string>
     <string name="save_file">Select Folder</string>
     <string name="ok">OK</string>
+    <string name="title_activity_map">MapActivity</string>
+    <string name="action_settings">Settings</string>
 
 </resources>

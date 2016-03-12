@@ -8,4 +8,8 @@ public interface IConstants {
         int PICK_FILE = 0;
         int SAVE_FILE = 1;
     }
+
+    interface INTENT_EXTRAS{
+        String MAP_PATH = "map_path";
+    }
 }

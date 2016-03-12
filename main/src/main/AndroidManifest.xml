@@ -20,16 +20,24 @@
         </activity>
         <activity
             android:name=".activities.TrainingSettings"
-            android:label="@string/title_activity_training_settings"></activity>
-
+            android:label="@string/title_activity_training_settings" />
         <activity
-            android:name="com.aggarwalankur.indoor_positioning.activities.FilePickerActivity"
+            android:name=".activities.FilePickerActivity"
             android:label="Pick Map File"
             android:theme="@style/FilePickerTheme">
             <intent-filter>
                 <action android:name="android.intent.action.GET_CONTENT" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".activities.MapActivity"
+            android:label="@string/title_activity_map"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/AppTheme.NoActionBar">
+
         </activity>
     </application>
 
