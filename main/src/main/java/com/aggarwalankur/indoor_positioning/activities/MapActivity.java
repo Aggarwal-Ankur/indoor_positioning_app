@@ -15,9 +15,14 @@ import android.widget.Toast;
 
 import com.aggarwalankur.indoor_positioning.R;
 import com.aggarwalankur.indoor_positioning.common.IConstants;
+import com.aggarwalankur.indoor_positioning.core.wifi.WiFiListener;
+import com.aggarwalankur.indoor_positioning.core.wifi.WifiHelper;
+import com.aggarwalankur.indoor_positioning.core.wifi.WifiScanResult;
 import com.aggarwalankur.indoor_positioning.fragments.MapFragment;
 
-public class MapActivity extends AppCompatActivity {
+import java.util.ArrayList;
+
+public class MapActivity extends AppCompatActivity implements WiFiListener {
 
     private String mapPath = "";
 
@@ -67,6 +72,8 @@ public class MapActivity extends AppCompatActivity {
             ft.add(R.id.map_activity_layout, mapFragment).commit();
         }
 
+        WifiHelper.getInstance().addListener(this, this);
+
     }
 
     @Override
@@ -88,8 +95,27 @@ public class MapActivity extends AppCompatActivity {
             case R.id.place_bt:
                 Toast.makeText(this.getApplicationContext(), "BT", Toast.LENGTH_SHORT).show();
                 break;
+
+            case R.id.place_wifi:
+                //Show the WiFi results dialog
+                break;
+
+            case R.id.place_nfc:
+                //Show the scan dialog
+                break;
         }
 
         return true;
+    }
+
+    @Override
+    protected void onDestroy() {
+        WifiHelper.getInstance().removeListener(this, this);
+        super.onDestroy();
+    }
+
+    @Override
+    public void onWifiScanResultsReceived(ArrayList<WifiScanResult> scanResults, long timestamp) {
+        Log.i(TAG, "onWifiScanResultsReceived. size ="+scanResults.size());
     }
 }

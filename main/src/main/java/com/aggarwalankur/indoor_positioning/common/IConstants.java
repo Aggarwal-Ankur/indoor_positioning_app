@@ -12,4 +12,11 @@ public interface IConstants {
     interface INTENT_EXTRAS{
         String MAP_PATH = "map_path";
     }
+
+    interface WIFI_CONSTANTS{
+        int ITEM_LIMIT = 12;
+
+        //ms
+        int WIFI_DELAY = 500;
+    }
 }
