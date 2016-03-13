@@ -19,6 +19,7 @@ import com.aggarwalankur.indoor_positioning.core.wifi.WiFiListener;
 import com.aggarwalankur.indoor_positioning.core.wifi.WifiHelper;
 import com.aggarwalankur.indoor_positioning.core.wifi.WifiScanResult;
 import com.aggarwalankur.indoor_positioning.fragments.MapFragment;
+import com.aggarwalankur.indoor_positioning.fragments.WifiListDialogFragment;
 
 import java.util.ArrayList;
 
@@ -98,6 +99,10 @@ public class MapActivity extends AppCompatActivity implements WiFiListener {
 
             case R.id.place_wifi:
                 //Show the WiFi results dialog
+                FragmentManager manager = getSupportFragmentManager();
+
+                WifiListDialogFragment dialog = new WifiListDialogFragment();
+                dialog.show(manager, "wifiListDialog");
                 break;
 
             case R.id.place_nfc:

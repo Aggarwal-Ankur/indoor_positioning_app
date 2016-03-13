@@ -18,6 +18,7 @@ import com.aggarwalankur.indoor_positioning.common.IConstants;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 public class WifiHelper {
 
@@ -34,12 +35,23 @@ public class WifiHelper {
 
     private Context mContext;
 
+    private CountDownLatch mStartCountdown = new CountDownLatch(1);
+
 	private WifiHelper(){
 		wifiScanListeners = new ArrayList<>();
 
-        Looper looper = Looper.myLooper();
-        mHandler = new Handler(looper);
-        Looper.loop();
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Looper.prepare();
+                mHandler = new Handler();
+                mStartCountdown.countDown();
+                Looper.loop();
+            }
+        });
+
+        t.start();
+
 	}
 
     public static WifiHelper getInstance() {
@@ -73,8 +85,14 @@ public class WifiHelper {
 
 
     public void deInitWifiScan(Context context) {
+        try {
+            mStartCountdown.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         mHandler.removeCallbacksAndMessages(null);
-    	context.unregisterReceiver(wifiScanReceiver);
+        mContext.unregisterReceiver(wifiScanReceiver);
     }
 
     public void initWifiScan() {
@@ -137,6 +155,11 @@ public class WifiHelper {
 
         mContext.registerReceiver(wifiScanReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
 
+        try {
+            mStartCountdown.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         mHandler.post(mWifiRunnable);
     }
 
@@ -146,7 +169,6 @@ public class WifiHelper {
             final WifiManager wifi = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
             final ConnectivityManager connManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo mWifi;
-            while (true) {
                 mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
                         /*
                          * Using Wifi manager to check if wifi is On
@@ -165,7 +187,6 @@ public class WifiHelper {
                 }
             }
 
-        }
     };
 
 }
