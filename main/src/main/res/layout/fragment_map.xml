@@ -2,21 +2,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".fragments.MapFragment"
-    tools:showIn="@layout/activity_map">
+    tools:context=".fragments.MapFragment">
 
-
+    <View
+        android:id="@+id/vwStatusSeperator"
+        android:layout_width="fill_parent"
+        android:layout_height="1dip"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"/>
     <com.aggarwalankur.indoor_positioning.customviews.Panel
         android:id="@+id/panel"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_alignParentLeft="true"
+        android:layout_below="@id/vwStatusSeperator"
         android:layout_alignParentTop="true"
-        android:background="@android:color/white" />
+        android:background="@android:color/holo_blue_light" />
 
 
 </RelativeLayout>
