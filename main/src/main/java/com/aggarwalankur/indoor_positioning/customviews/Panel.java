@@ -48,6 +48,8 @@ public class Panel extends View{
 
     private PointF crosshairCoords = new PointF();
 
+    private PointF currentLocation;
+
     /** Floats used in the transformation matrix */
     private float[] values = new float[9];
 
@@ -221,6 +223,18 @@ public class Panel extends View{
                     * bgImage.getHeight();
         }
 
+
+        currentLocation = new PointF();
+        currentLocation.x = (crosshairCoords.x - values[2]) / values[0];
+        currentLocation.y = (crosshairCoords.y - values[5] + Y_OFFSET)
+                / values[0];
+
+        currentLocation.y = indoorMapHeight - currentLocation.y;
+
+    }
+
+    public PointF getCurrentLoc(){
+        return currentLocation;
     }
 
     public void setYOffSet(int offset){

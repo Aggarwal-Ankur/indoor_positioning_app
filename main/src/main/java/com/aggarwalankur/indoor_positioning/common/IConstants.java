@@ -19,4 +19,12 @@ public interface IConstants {
         //ms
         int WIFI_DELAY = 500;
     }
+
+    interface ANCHOR_TYPE{
+        int UNDEFINED = 1000;
+
+        int NFC = UNDEFINED + 1;
+        int WIFI= UNDEFINED +2;
+        int BLE = UNDEFINED +3;
+    }
 }

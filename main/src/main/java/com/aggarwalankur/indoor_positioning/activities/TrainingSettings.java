@@ -8,10 +8,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.aggarwalankur.indoor_positioning.R;
 import com.aggarwalankur.indoor_positioning.common.IConstants;
+import com.aggarwalankur.indoor_positioning.core.trainingdata.TrainingDataPOJO;
+import com.aggarwalankur.indoor_positioning.core.xml.MapXmlHelper;
+import com.aggarwalankur.indoor_positioning.core.trainingdata.TrainingDataManager;
+import com.aggarwalankur.indoor_positioning.core.xml.MapXmlPullParser;
 
 import java.util.ArrayList;
 
@@ -25,6 +28,7 @@ public class TrainingSettings extends AppCompatActivity implements View.OnClickL
 
     private String mMapPath="";
 
+    private TrainingDataManager mTrainingDataManager;
 
 
     @Override
@@ -32,21 +36,36 @@ public class TrainingSettings extends AppCompatActivity implements View.OnClickL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.training_settings);
 
+        MapXmlHelper.getInstance(this).loadXml();
+
+        mTrainingDataManager = TrainingDataManager.getInstance();
+
+
         mMapFile = (TextView) findViewById(R.id.map_file_name);
+        mMapHeight = (EditText) findViewById(R.id.map_height);
+        mMapWidth = (EditText) findViewById(R.id.map_width);
+        mMapBearing = (EditText) findViewById(R.id.map_bearing);
+        mStrideLength = (EditText) findViewById(R.id.stride_length);
 
         mMapFileSelector = (Button) findViewById(R.id.btn_select_mapfile);
         mAddAnchorsButton = (Button) findViewById(R.id.btn_add_anchors);
         mTrainWifiButton = (Button) findViewById(R.id.btn_train_wifi);
 
-
         mMapFileSelector.setOnClickListener(this);
         mAddAnchorsButton.setOnClickListener(this);
         mTrainWifiButton.setOnClickListener(this);
 
-        mMapHeight = (EditText) findViewById(R.id.map_height);
-        mMapWidth = (EditText) findViewById(R.id.map_width);
-        mMapBearing = (EditText) findViewById(R.id.map_bearing);
-        mStrideLength = (EditText) findViewById(R.id.stride_length);
+
+        if(mTrainingDataManager.isDataLoaded()){
+            TrainingDataPOJO trainingData = mTrainingDataManager.getData();
+            mMapFile.setText(trainingData.mapPath);
+            mMapHeight.setText(Integer.toString(trainingData.mapHeight));
+            mMapWidth.setText(Integer.toString(trainingData.mapWidth));
+            mMapBearing.setText(Integer.toString(trainingData.mapBearing));
+            mStrideLength.setText(Integer.toString(trainingData.strideLength));
+        }
+
+
 
     }
 
@@ -78,6 +97,9 @@ public class TrainingSettings extends AppCompatActivity implements View.OnClickL
                 addAnchorsIntent.putExtra(IConstants.INTENT_EXTRAS.MAP_PATH, mMapPath);
                 startActivity(addAnchorsIntent);
 
+
+                //This is a background operation
+                sendTrainingDataToManager();
                 break;
 
             case R.id.btn_train_wifi :
@@ -88,6 +110,21 @@ public class TrainingSettings extends AppCompatActivity implements View.OnClickL
     }
 
 
+    private void sendTrainingDataToManager(){
+        mTrainingDataManager.addMapBasicData(mMapPath,
+                Integer.parseInt(mMapHeight.getText().toString()),
+                Integer.parseInt(mMapWidth.getText().toString()),
+                Integer.parseInt(mMapBearing.getText().toString()),
+                Integer.parseInt(mStrideLength.getText().toString()));
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        MapXmlHelper.getInstance(this).writeXML(mTrainingDataManager.getData());
+
+        super.onDestroy();
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

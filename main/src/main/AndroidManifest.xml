@@ -23,6 +23,7 @@
         </activity>
         <activity
             android:name=".activities.TrainingSettings"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_training_settings" />
         <activity
             android:name=".activities.FilePickerActivity"

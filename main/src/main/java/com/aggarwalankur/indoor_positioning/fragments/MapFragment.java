@@ -63,4 +63,8 @@ public class MapFragment extends Fragment {
         return v;
     }
 
+    public Panel getPanelData(){
+        return mPanel;
+    }
+
 }

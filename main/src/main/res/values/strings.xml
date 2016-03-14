@@ -2,7 +2,7 @@
     <string name="app_name">Indoor Positioning</string>
     <string name="start_training">Start training the app</string>
     <string name="start_indoor_positioning">Start Indoor Positioning</string>
-    <string name="title_activity_training_settings">TrainingSettings</string>
+    <string name="title_activity_training_settings">Training App</string>
 
 
     <!-- Used in training settings-->
@@ -14,7 +14,7 @@
     <string name="save_file_message">Setting file name(Extension not required):</string>
     <string name="save_file">Select Folder</string>
     <string name="ok">OK</string>
-    <string name="title_activity_map">MapActivity</string>
+    <string name="title_activity_map">Map Activity</string>
     <string name="action_settings">Settings</string>
 
 </resources>
