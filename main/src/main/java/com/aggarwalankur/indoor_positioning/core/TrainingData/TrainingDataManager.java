@@ -47,6 +47,10 @@ public class TrainingDataManager {
         mData.stepLength = (float)strideLength/2;
     }
 
+    public void resetMapData(){
+        mData.resetAllData();
+    }
+
 
     public void addAnchor(PointF point, String id, int type){
         mData.addAnchor(point, id, type);

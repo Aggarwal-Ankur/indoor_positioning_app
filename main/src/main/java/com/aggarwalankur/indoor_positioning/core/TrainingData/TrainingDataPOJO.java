@@ -21,11 +21,11 @@ public class TrainingDataPOJO {
 
     public void resetAllData(){
          mapPath = "";
-          mapHeight = -1;
-          mapWidth = -1;
-          mapBearing = -1;
-          strideLength = -1;
-          stepLength = -1;
+          mapHeight = 1;
+          mapWidth = 1;
+          mapBearing = 1;
+          strideLength = 1;
+          stepLength = 1;
 
 
          anchorList = new ArrayList<>();

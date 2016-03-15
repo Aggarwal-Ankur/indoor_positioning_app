@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.aggarwalankur.indoor_positioning.R;
 import com.aggarwalankur.indoor_positioning.common.IConstants;
@@ -58,7 +59,8 @@ public class TrainingSettings extends AppCompatActivity implements View.OnClickL
 
         if(mTrainingDataManager.isDataLoaded()){
             TrainingDataPOJO trainingData = mTrainingDataManager.getData();
-            mMapFile.setText(trainingData.mapPath);
+            mMapPath = trainingData.mapPath;
+            mMapFile.setText("Map File : "+mMapPath);
             mMapHeight.setText(Integer.toString(trainingData.mapHeight));
             mMapWidth.setText(Integer.toString(trainingData.mapWidth));
             mMapBearing.setText(Integer.toString(trainingData.mapBearing));
@@ -91,15 +93,23 @@ public class TrainingSettings extends AppCompatActivity implements View.OnClickL
                 break;
 
             case R.id.btn_add_anchors:
-                //Intent to map draw activity
-
-                Intent addAnchorsIntent = new Intent(this, MapActivity.class);
-                addAnchorsIntent.putExtra(IConstants.INTENT_EXTRAS.MAP_PATH, mMapPath);
-                startActivity(addAnchorsIntent);
 
 
-                //This is a background operation
-                sendTrainingDataToManager();
+                try {
+                    //This is a background operation
+                    sendTrainingDataToManager();
+
+                    //Intent to map draw activity
+                    Intent addAnchorsIntent = new Intent(this, MapActivity.class);
+                    addAnchorsIntent.putExtra(IConstants.INTENT_EXTRAS.MAP_PATH, mMapPath);
+                    startActivity(addAnchorsIntent);
+                }catch(Exception e){
+                    e.printStackTrace();
+
+                    Toast.makeText(getApplicationContext(), "Invalid map data. Please check again", Toast.LENGTH_SHORT).show();
+                }
+
+
                 break;
 
             case R.id.btn_train_wifi :
@@ -132,7 +142,22 @@ public class TrainingSettings extends AppCompatActivity implements View.OnClickL
         } else if ((requestCode == IConstants.FILE_PICKER_CONSTANTS.PICK_FILE) && (resultCode == RESULT_OK)) {
             mMapPath = data.getStringExtra(FilePickerActivity.EXTRA_FILE_PATH);
             mMapFile.setText("Map File : "+mMapPath);
+
+            refreshAllData();
         }
+    }
+
+    private void refreshAllData(){
+        mTrainingDataManager.resetMapData();
+        mTrainingDataManager.addMapBasicData(mMapPath,
+                0,0,0,0);
+
+        mMapHeight.setText("");
+        mMapWidth.setText("");
+        mMapBearing.setText("");
+        mStrideLength.setText("");
+
+
     }
 
     @Override

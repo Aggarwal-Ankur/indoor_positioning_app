@@ -16,7 +16,7 @@
         android:layout_height="fill_parent"
         android:layout_below="@id/vwStatusSeperator"
         android:layout_alignParentTop="true"
-        android:background="@android:color/holo_blue_light" />
+        android:background="@android:color/transparent" />
 
 
 </RelativeLayout>

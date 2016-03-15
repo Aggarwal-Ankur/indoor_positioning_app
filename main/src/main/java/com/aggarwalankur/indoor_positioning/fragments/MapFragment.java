@@ -12,7 +12,12 @@ import android.view.ViewTreeObserver;
 
 import com.aggarwalankur.indoor_positioning.R;
 import com.aggarwalankur.indoor_positioning.common.IConstants;
+import com.aggarwalankur.indoor_positioning.core.trainingdata.AnchorPOJO;
+import com.aggarwalankur.indoor_positioning.core.trainingdata.TrainingDataManager;
+import com.aggarwalankur.indoor_positioning.core.trainingdata.TrainingDataPOJO;
 import com.aggarwalankur.indoor_positioning.customviews.Panel;
+
+import java.util.ArrayList;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -58,6 +63,13 @@ public class MapFragment extends Fragment {
                 mPanel.setYOffSet(iStatusBarLocarr[1]);
             }
         });
+
+        TrainingDataPOJO trainingData = TrainingDataManager.getInstance().getData();
+
+        mPanel.mapHeightMetres = trainingData.mapHeight;
+        mPanel.mapWidthMetres = trainingData.mapWidth;
+
+        mPanel.setAnchorList((ArrayList<AnchorPOJO>) trainingData.anchorList.clone());
 
 
         return v;

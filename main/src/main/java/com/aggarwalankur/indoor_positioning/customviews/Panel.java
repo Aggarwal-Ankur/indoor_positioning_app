@@ -16,9 +16,12 @@ import android.util.Log;
 import android.view.View;
 
 import com.aggarwalankur.indoor_positioning.R;
+import com.aggarwalankur.indoor_positioning.common.IConstants;
+import com.aggarwalankur.indoor_positioning.core.trainingdata.AnchorPOJO;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 
 /**
  * Created by Ankur on 12-Mar-16.
@@ -30,6 +33,8 @@ public class Panel extends View{
     public int indoorMapWidth = 800, indoorMapHeight = 400;
 
     public int actualMapHeight = 800, actualMapWidth = 400;
+
+    public int mapHeightMetres = 100, mapWidthMetres = 100;
 
     private static final String TAG = "Panel";
 
@@ -45,6 +50,13 @@ public class Panel extends View{
     private Bitmap crosshair = BitmapFactory.decodeResource(this.getResources(), R.drawable.crosshair);
     private float crosshairWidth = crosshair.getWidth();
     private float crosshairHeight = crosshair.getHeight();
+
+    private Bitmap nAnchor = BitmapFactory.decodeResource(this.getResources(), R.drawable.n_anchor);
+    private Bitmap wAnchor = BitmapFactory.decodeResource(this.getResources(), R.drawable.w_anchor);
+    private Bitmap bAnchor = BitmapFactory.decodeResource(this.getResources(), R.drawable.b_anchor);
+
+
+    private ArrayList<AnchorPOJO> anchorList = new ArrayList<>();
 
     private PointF crosshairCoords = new PointF();
 
@@ -99,7 +111,7 @@ public class Panel extends View{
             matrix = new Matrix();
         }
         canvas.setMatrix(matrix);
-        canvas.drawColor(Color.WHITE);
+        canvas.drawColor(Color.TRANSPARENT);
 
         // Do not draw any bitmap if map is null
         if (bgImage != null){
@@ -117,11 +129,40 @@ public class Panel extends View{
 
         }
 
+        //Draw the anchors. These have to be always drawn
+        AnchorListLoop : for(AnchorPOJO currentAnchor : anchorList){
+            Bitmap anchorBitmap;
+            switch (currentAnchor.type){
+                case IConstants.ANCHOR_TYPE.NFC:
+                    anchorBitmap = nAnchor;
+                    break;
+                case IConstants.ANCHOR_TYPE.WIFI:
+                    anchorBitmap = wAnchor;
+                    break;
+                case IConstants.ANCHOR_TYPE.BLE:
+                    anchorBitmap = bAnchor;
+                    break;
+                default :
+                    continue AnchorListLoop;
+            }
+
+            float anchorX = (currentAnchor.x/mapWidthMetres) * indoorMapWidth;
+            float anchorY = (currentAnchor.y/mapHeightMetres) * indoorMapHeight;
+
+            canvas.drawBitmap(anchorBitmap, anchorX - anchorBitmap.getWidth()/ 2,
+                    indoorMapHeight - anchorY - anchorBitmap.getHeight()/ 2, null);
+
+        }
+
         canvas.restore();
         if (mMode == 0){
             canvas.drawBitmap(crosshair, crosshairCoords.x - crosshairWidth/ 2, crosshairCoords.y - crosshairHeight/ 2, null);
         }
+
+
     }
+
+
 
     /** Utility function to allow loading a new bg map */
     public void loadNewMap(String path) {
@@ -215,7 +256,8 @@ public class Panel extends View{
         } else if (x > (values[2] + values[0] * bgImage.getWidth())) {
             crosshairCoords.x = values[2] + values[0] * bgImage.getWidth();
         }
-        // 35 is approx the height of title bar on desire
+
+
         if (y < values[5] - Y_OFFSET) {
             crosshairCoords.y = values[5] - Y_OFFSET;
         } else if (y > (values[5] - Y_OFFSET + values[0] * bgImage.getHeight())) {
@@ -231,6 +273,9 @@ public class Panel extends View{
 
         currentLocation.y = indoorMapHeight - currentLocation.y;
 
+        currentLocation.x = (currentLocation.x /indoorMapWidth) * mapWidthMetres;
+        currentLocation.y = (currentLocation.y /indoorMapHeight) * mapHeightMetres;
+
     }
 
     public PointF getCurrentLoc(){
@@ -239,5 +284,11 @@ public class Panel extends View{
 
     public void setYOffSet(int offset){
         Y_OFFSET = offset;
+        matrix = new Matrix();
+        matrix.postTranslate(0, Y_OFFSET);
+    }
+
+    public void setAnchorList(ArrayList<AnchorPOJO> anchorList) {
+        this.anchorList = anchorList;
     }
 }

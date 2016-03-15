@@ -1,8 +1,11 @@
 package com.aggarwalankur.indoor_positioning.activities;
 
 import android.app.FragmentTransaction;
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
@@ -17,6 +20,8 @@ import android.widget.Toast;
 import com.aggarwalankur.indoor_positioning.R;
 import com.aggarwalankur.indoor_positioning.common.IConstants;
 import com.aggarwalankur.indoor_positioning.core.listeners.SelectedAnchorListener;
+import com.aggarwalankur.indoor_positioning.core.nfc.NfcHelper;
+import com.aggarwalankur.indoor_positioning.core.trainingdata.AnchorPOJO;
 import com.aggarwalankur.indoor_positioning.core.trainingdata.TrainingDataManager;
 import com.aggarwalankur.indoor_positioning.core.wifi.WiFiListener;
 import com.aggarwalankur.indoor_positioning.core.wifi.WifiHelper;
@@ -47,6 +52,11 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
 
     private String mSelectedAnchor = "";
     private int selectedAnchorType = IConstants.ANCHOR_TYPE.UNDEFINED;
+
+
+    private PendingIntent nfcPendingIntent;
+    private IntentFilter[] nfcIntentFiltersArray;
+    private NfcAdapter nfcAdpt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,10 +104,66 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
             ft.add(R.id.map_activity_layout, mapFragment).commit();
         }
 
-
         //Cehck mode and then add listener
         WifiHelper.getInstance().addListener(this, this);
 
+
+        //Check mode and add
+        nfcAdpt = NfcAdapter.getDefaultAdapter(this);
+        // Check if the smartphone has NFC
+        if (nfcAdpt == null) {
+            Toast.makeText(this, "NFC not supported", Toast.LENGTH_LONG).show();
+            finish();
+        }
+        // Check if NFC is enabled
+        if (!nfcAdpt.isEnabled()) {
+            Toast.makeText(this, "Enable NFC before using the app", Toast.LENGTH_LONG).show();
+        }
+
+        Intent nfcIntent = new Intent(this, getClass());
+        nfcIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+        nfcPendingIntent = PendingIntent.getActivity(this, 0, nfcIntent, 0);
+
+        IntentFilter tagIntentFilter = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
+        try {
+            tagIntentFilter.addDataType("text/plain");
+            nfcIntentFiltersArray = new IntentFilter[]{tagIntentFilter};
+        }catch (Throwable t) {
+            t.printStackTrace();
+        }
+
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        nfcAdpt.enableForegroundDispatch(
+                this,
+                nfcPendingIntent,
+                null,
+                null);
+        handleIntent(getIntent());
+    }
+
+    private void handleIntent(Intent intent) {
+        String action = intent.getAction();
+        if (NfcAdapter.ACTION_TAG_DISCOVERED.equals(action)
+                || NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)
+                || NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
+
+            mSelectedAnchor = NfcHelper.getInstance().getNfcTag(intent);
+            Toast.makeText(this, "Tag found: "+ mSelectedAnchor, Toast.LENGTH_SHORT).show();
+        }
+
+
+    }
+
+    @Override
+    protected void onNewIntent(final Intent intent) {
+        super.onNewIntent(intent);
+        handleIntent(intent);
     }
 
     @Override
@@ -135,6 +201,9 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
 
             case R.id.place_nfc:
                 //Show the scan dialog
+                selectedAnchorType = IConstants.ANCHOR_TYPE.NFC;
+                mOKButton.setEnabled(true);
+                mCancelButton.setEnabled(true);
                 break;
         }
 
@@ -159,10 +228,18 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
 
         switch (view.getId()){
             case R.id.button_ok:
-                TrainingDataManager.getInstance().addAnchor(mapFragment.getPanelData().getCurrentLoc(), mSelectedAnchor, selectedAnchorType);
-                mOKButton.setEnabled(false);
-                mCancelButton.setEnabled(false);
-                refreshAnchorData();
+                if(!mSelectedAnchor.isEmpty() && selectedAnchorType != IConstants.ANCHOR_TYPE.UNDEFINED) {
+
+                    TrainingDataManager.getInstance().addAnchor(mapFragment.getPanelData().getCurrentLoc(), mSelectedAnchor, selectedAnchorType);
+                    mOKButton.setEnabled(false);
+                    mCancelButton.setEnabled(false);
+                    refreshAnchorData();
+
+                    mapFragment.getPanelData().setAnchorList((ArrayList<AnchorPOJO>) TrainingDataManager.getInstance().getData().anchorList.clone());
+                    mapFragment.getPanelData().invalidate();
+                }else{
+                    Toast.makeText(this, "Invalid Anchor data", Toast.LENGTH_SHORT).show();
+                }
                 break;
 
             case R.id.button_cancel:
