@@ -35,10 +35,15 @@ public class NfcHelper {
         String idValue = "";
 
         for(int i =0; i<id.length; i++){
+            String tempVal = Integer.toHexString(id[i] & 0xFF);
+
+            if(tempVal.length()==1){
+                tempVal = "0"+tempVal;
+            }
             if(i>0){
-                idValue = idValue + ":" + Integer.toHexString(id[i] & 0xFF);
+                idValue = idValue + ":" + tempVal;
             }else{
-                idValue = Integer.toHexString(id[i] & 0xFF);
+                idValue = tempVal;
             }
         }
 

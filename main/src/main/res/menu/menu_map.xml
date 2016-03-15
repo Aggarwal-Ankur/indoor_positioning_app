@@ -9,11 +9,11 @@
     <item
         android:id="@+id/place_wifi"
         android:orderInCategory="200"
-        android:title="Place Wi-Fi"
+        android:title="Place Wi-Fi Anchor"
         android:titleCondensed="Import">
     </item>
     <item android:id="@+id/place_bt"
         android:orderInCategory="300"
-        android:title="Place BLE Beacon" />
+        android:title="Place BLE Anchor" />
 
 </menu>

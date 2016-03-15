@@ -102,6 +102,7 @@ public class TrainingSettings extends AppCompatActivity implements View.OnClickL
                     //Intent to map draw activity
                     Intent addAnchorsIntent = new Intent(this, MapActivity.class);
                     addAnchorsIntent.putExtra(IConstants.INTENT_EXTRAS.MAP_PATH, mMapPath);
+                    addAnchorsIntent.putExtra(IConstants.INTENT_EXTRAS.MODE, IConstants.MAP_ACTIVITY_MODES.MODE_SET_ANCHORS);
                     startActivity(addAnchorsIntent);
                 }catch(Exception e){
                     e.printStackTrace();
@@ -114,7 +115,20 @@ public class TrainingSettings extends AppCompatActivity implements View.OnClickL
 
             case R.id.btn_train_wifi :
                 //Intent to select training Wi-Fi's
+                try {
+                    //This is a background operation
+                    sendTrainingDataToManager();
 
+                    //Intent to map draw activity
+                    Intent trainWifiIntent = new Intent(this, MapActivity.class);
+                    trainWifiIntent.putExtra(IConstants.INTENT_EXTRAS.MAP_PATH, mMapPath);
+                    trainWifiIntent.putExtra(IConstants.INTENT_EXTRAS.MODE, IConstants.MAP_ACTIVITY_MODES.MODE_TRAIN_WIFI);
+                    startActivity(trainWifiIntent);
+                }catch(Exception e){
+                    e.printStackTrace();
+
+                    Toast.makeText(getApplicationContext(), "Invalid map data. Please check again", Toast.LENGTH_SHORT).show();
+                }
                 break;
         }
     }

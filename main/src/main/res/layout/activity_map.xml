@@ -41,6 +41,22 @@
             android:text="OK"/>
 
         <Button
+            android:id="@+id/button_i_am_here"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:visibility="gone"
+            android:text="I am\nHere"/>
+
+        <Button
+            android:id="@+id/button_wifi_train_end"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:visibility="gone"
+            android:text="Stop"/>
+
+        <Button
             android:id="@+id/button_cancel"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
