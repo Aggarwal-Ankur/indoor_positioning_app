@@ -6,6 +6,8 @@ import android.util.Log;
 import com.aggarwalankur.indoor_positioning.core.trainingdata.AnchorPOJO;
 import com.aggarwalankur.indoor_positioning.core.trainingdata.TrainingDataManager;
 import com.aggarwalankur.indoor_positioning.core.trainingdata.TrainingDataPOJO;
+import com.aggarwalankur.indoor_positioning.core.trainingdata.WiFiDataPoint;
+import com.aggarwalankur.indoor_positioning.core.trainingdata.WifiDataPOJO;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -91,7 +93,6 @@ public class MapXmlHelper {
 
 
             //Add the Anchor list
-
             Element anchorList = doc.createElement(MapXmlPullParser.ELEMENT_ANCHORLIST);
 
             for(AnchorPOJO currentAnchor : trainingData.anchorList){
@@ -121,9 +122,46 @@ public class MapXmlHelper {
             rootElement.appendChild(anchorList);
 
 
-            //Write the data to actual XML
 
-            // write the content into xml file
+            //Add the WifiDataPoint list
+            Element wifiDataPointList = doc.createElement(MapXmlPullParser.ELEMENT_WIFIDATAPOINTLIST);
+
+            for(WiFiDataPoint currentWifiDataPoint : trainingData.wiFiDataPoints){
+
+                Element currentWifiDataPointElement = doc.createElement(MapXmlPullParser.ELEMENT_WIFIDATAPOINT);
+
+                Attr attrXCord = doc.createAttribute(MapXmlPullParser.ATR_XCORD);
+                attrXCord.setValue(Float.toString(currentWifiDataPoint.x));
+                currentWifiDataPointElement.setAttributeNode(attrXCord);
+
+                Attr attrYCord = doc.createAttribute(MapXmlPullParser.ATR_YCORD);
+                attrYCord.setValue(Float.toString(currentWifiDataPoint.y));
+                currentWifiDataPointElement.setAttributeNode(attrYCord);
+
+
+                for(WifiDataPOJO currentWifiData : currentWifiDataPoint.wifiData){
+                    Element currentWifiDataElement = doc.createElement(MapXmlPullParser.ELEMENT_WIFIDATA);
+
+                    Attr attrId = doc.createAttribute(MapXmlPullParser.ATR_ID);
+                    attrId.setValue(currentWifiData.bssid);
+                    currentWifiDataElement.setAttributeNode(attrId);
+
+                    Attr attrRssi = doc.createAttribute(MapXmlPullParser.ATR_RSSI);
+                    attrRssi.setValue(Double.toString(currentWifiData.rssi));
+                    currentWifiDataElement.setAttributeNode(attrRssi);
+
+
+                    currentWifiDataPointElement.appendChild(currentWifiDataElement);
+                }
+
+                wifiDataPointList.appendChild(currentWifiDataPointElement);
+            }
+
+
+            rootElement.appendChild(wifiDataPointList);
+
+
+            //Write the data to actual XML
             TransformerFactory transformerFactory =
                     TransformerFactory.newInstance();
             Transformer transformer =

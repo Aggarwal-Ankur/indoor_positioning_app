@@ -9,5 +9,5 @@ public class WiFiDataPoint {
     public float x = 0;
     public float y = 0;
 
-    ArrayList<WifiDataPOJO> wifiData = new ArrayList<>();
+    public ArrayList<WifiDataPOJO> wifiData = new ArrayList<>();
 }

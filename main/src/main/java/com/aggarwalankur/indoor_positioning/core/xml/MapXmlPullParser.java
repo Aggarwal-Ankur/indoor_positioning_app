@@ -4,6 +4,8 @@ import android.util.Log;
 
 import com.aggarwalankur.indoor_positioning.core.trainingdata.AnchorPOJO;
 import com.aggarwalankur.indoor_positioning.core.trainingdata.TrainingDataPOJO;
+import com.aggarwalankur.indoor_positioning.core.trainingdata.WiFiDataPoint;
+import com.aggarwalankur.indoor_positioning.core.trainingdata.WifiDataPOJO;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -34,11 +36,16 @@ public class MapXmlPullParser {
     public static final String ELEMENT_ANCHORLIST = "anchorList";
     public static final String ELEMENT_ANCHOR = "anchor";
 
+    public static final String ELEMENT_WIFIDATAPOINTLIST = "wifiDataPointList";
+    public static final String ELEMENT_WIFIDATAPOINT = "wifiDataPoint";
+    public static final String ELEMENT_WIFIDATA = "wifiData";
+
 
     public static final String ATR_XCORD = "xCord";
     public static final String ATR_YCORD = "yCord";
     public static final String ATR_ID = "id";
     public static final String ATR_TYPE = "type";
+    public static final String ATR_RSSI = "rssi";
 
 
     private TrainingDataPOJO trainingData;
@@ -53,6 +60,8 @@ public class MapXmlPullParser {
         FileInputStream fis = new FileInputStream(file);
         xpp.setInput(new InputStreamReader(fis));
 
+
+        WiFiDataPoint currentWifiDataPoint = new WiFiDataPoint();
 
         //Now parse using pull mechanism
         int eventType = xpp.getEventType();
@@ -82,8 +91,30 @@ public class MapXmlPullParser {
                     currentAnchor.type = Integer.parseInt(xpp.getAttributeValue(null, ATR_TYPE));
 
                     trainingData.anchorList.add(currentAnchor);
+                }else if(xpp.getName().equalsIgnoreCase(ELEMENT_WIFIDATAPOINTLIST)){
+                    trainingData.wiFiDataPoints = new ArrayList<>();
+                }else if(xpp.getName().equalsIgnoreCase(ELEMENT_WIFIDATAPOINT)){
+                    currentWifiDataPoint = new WiFiDataPoint();
+
+                    currentWifiDataPoint.x = Float.parseFloat(xpp.getAttributeValue(null, ATR_XCORD));
+                    currentWifiDataPoint.y = Float.parseFloat(xpp.getAttributeValue(null, ATR_YCORD));
+                }else if(xpp.getName().equalsIgnoreCase(ELEMENT_WIFIDATA)){
+                    WifiDataPOJO currentWifiData = new WifiDataPOJO();
+
+                    currentWifiData.bssid = xpp.getAttributeValue(null, ATR_ID);
+                    currentWifiData.rssi = Double.parseDouble(xpp.getAttributeValue(null, ATR_RSSI));
+
+                    currentWifiDataPoint.wifiData.add(currentWifiData);
                 }
 
+            //Endof START_TAG
+            }else if(eventType == XmlPullParser.END_TAG) {
+                if(xpp.getName().equalsIgnoreCase(ELEMENT_WIFIDATAPOINT)){
+                    trainingData.wiFiDataPoints.add(currentWifiDataPoint);
+
+                    //Refresh
+                    currentWifiDataPoint = new WiFiDataPoint();
+                }
             }
 
             //Iterate through the xml

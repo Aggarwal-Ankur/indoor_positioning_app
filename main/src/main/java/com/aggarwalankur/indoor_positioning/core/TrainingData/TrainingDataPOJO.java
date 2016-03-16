@@ -89,4 +89,15 @@ public class TrainingDataPOJO {
 
         wiFiDataPoints.add(currentDatapoint);
     }
+
+    public ArrayList<PointF> getDataLocationPoints(){
+        ArrayList<PointF> locationPoints = new ArrayList<>();
+
+        for(WiFiDataPoint currentWifiDataPoint : wiFiDataPoints){
+            PointF currentPoint = new PointF(currentWifiDataPoint.x, currentWifiDataPoint.y);
+            locationPoints.add(currentPoint);
+        }
+
+        return locationPoints;
+    }
 }

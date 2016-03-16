@@ -379,6 +379,10 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
 
                 TrainingDataManager.getInstance().addWifiDataPoint(mIAmHereLocation);
                 TrainingDataManager.getInstance().setCollectWifitrainingData(false);
+
+                //Now, set it to the map
+                mapFragment.getPanelData().setWifiDataPointList(TrainingDataManager.getInstance().getData().getDataLocationPoints());
+                mapFragment.getPanelData().invalidate();
                 break;
 
         }

@@ -37,7 +37,7 @@ public class TrainingSettings extends AppCompatActivity implements View.OnClickL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.training_settings);
 
-        MapXmlHelper.getInstance(this).loadXml();
+
 
         mTrainingDataManager = TrainingDataManager.getInstance();
 

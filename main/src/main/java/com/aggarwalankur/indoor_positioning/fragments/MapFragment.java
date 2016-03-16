@@ -25,6 +25,7 @@ import java.util.ArrayList;
 public class MapFragment extends Fragment {
 
     private String mapPath ="";
+    private int mode = IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING;
 
     private Panel mPanel;
 
@@ -45,13 +46,14 @@ public class MapFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_map, container, false);
 
         mapPath = getArguments().getString(IConstants.INTENT_EXTRAS.MAP_PATH);
+        mode = getArguments().getInt(IConstants.INTENT_EXTRAS.MODE);
 
         mPanel = (Panel) v.findViewById(R.id.panel);
 
         vwStatusSeperator = v.findViewById(R.id.vwStatusSeperator);
 
         //This is a direct call, so it should be avoided as much as possible
-        mPanel.loadNewMap(mapPath);
+        mPanel.loadNewMap(mapPath, mode);
 
         mPanel.repaint();
 
@@ -70,6 +72,7 @@ public class MapFragment extends Fragment {
         mPanel.mapWidthMetres = trainingData.mapWidth;
 
         mPanel.setAnchorList((ArrayList<AnchorPOJO>) trainingData.anchorList.clone());
+        mPanel.setWifiDataPointList(TrainingDataManager.getInstance().getData().getDataLocationPoints());
 
 
         return v;

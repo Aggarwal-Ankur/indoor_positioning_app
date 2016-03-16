@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.aggarwalankur.indoor_positioning.R;
+import com.aggarwalankur.indoor_positioning.core.xml.MapXmlHelper;
 
 public class IPSMainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -24,6 +25,9 @@ public class IPSMainActivity extends AppCompatActivity implements View.OnClickLi
 
         mTrainingButton.setOnClickListener(this);
         mPositioningStartButton.setOnClickListener(this);
+
+
+        MapXmlHelper.getInstance(this).loadXml();
 
     }
 

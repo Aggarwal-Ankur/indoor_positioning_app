@@ -40,6 +40,7 @@ public class Panel extends View{
 
     //TempImgPath is used to allow async loading
     private String tempImgPath = "/sdcard/";
+    private int mode;
 
     private Paint paint = new Paint();
     private static Matrix matrix;
@@ -57,6 +58,9 @@ public class Panel extends View{
 
 
     private ArrayList<AnchorPOJO> anchorList = new ArrayList<>();
+
+    private ArrayList<PointF> wifiDataLocations = new ArrayList<>();
+    private ArrayList<PointF> iAmHereLocations = new ArrayList<>();
 
     private PointF crosshairCoords = new PointF();
 
@@ -154,6 +158,34 @@ public class Panel extends View{
 
         }
 
+        if(mode == IConstants.MAP_ACTIVITY_MODES.MODE_TRAIN_WIFI){
+            Paint paint = new Paint();
+            paint.setColor(Color.parseColor("#FFFF4444"));
+            paint.setStrokeWidth(4);
+            paint.setStyle(Paint.Style.FILL_AND_STROKE);
+
+            for(PointF currentPoint : wifiDataLocations){
+                float locX = (currentPoint.x/mapWidthMetres) * indoorMapWidth;
+                float locY = (currentPoint.y/mapHeightMetres) * indoorMapHeight;
+                locY = indoorMapHeight - locY;
+
+                canvas.drawCircle(locX, locY, 4, paint);
+            }
+        }else if(mode == IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING){
+            Paint paint = new Paint();
+            paint.setColor(Color.parseColor("#FF0099CC"));
+            paint.setStrokeWidth(4);
+            paint.setStyle(Paint.Style.FILL_AND_STROKE);
+
+            for(PointF currentPoint : iAmHereLocations){
+                float locX = (currentPoint.x/mapWidthMetres) * indoorMapWidth;
+                float locY = (currentPoint.y/mapHeightMetres) * indoorMapHeight;
+                locY = indoorMapHeight - locY;
+
+                canvas.drawCircle(locX, locY, 4, paint);
+            }
+        }
+
         canvas.restore();
         if (mMode == 0){
             canvas.drawBitmap(crosshair, crosshairCoords.x - crosshairWidth/ 2, crosshairCoords.y - crosshairHeight/ 2, null);
@@ -165,7 +197,7 @@ public class Panel extends View{
 
 
     /** Utility function to allow loading a new bg map */
-    public void loadNewMap(String path) {
+    public void loadNewMap(String path, int mode) {
         if(bgImage != null)
         {
             bgImage.recycle();
@@ -173,6 +205,7 @@ public class Panel extends View{
         }
         System.gc();
         tempImgPath = path;
+        this.mode = mode;
 
 
         this.post(new Runnable() {
@@ -290,5 +323,26 @@ public class Panel extends View{
 
     public void setAnchorList(ArrayList<AnchorPOJO> anchorList) {
         this.anchorList = anchorList;
+    }
+
+    public void setWifiDataPointList(ArrayList<PointF> dataLocationPoints){
+        if(dataLocationPoints == null){
+            this.wifiDataLocations = new ArrayList<>();
+        }else {
+            this.wifiDataLocations = dataLocationPoints;
+        }
+    }
+
+
+    public void addIamHereDataPoint(PointF iAmHerePoint){
+        if(iAmHereLocations == null){
+            this.iAmHereLocations = new ArrayList<>();
+        }
+
+        iAmHereLocations.add(iAmHerePoint);
+    }
+
+    public void resetIamHereLocations(){
+        iAmHereLocations.clear();
     }
 }
