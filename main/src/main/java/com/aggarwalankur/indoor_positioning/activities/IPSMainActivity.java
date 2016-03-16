@@ -7,8 +7,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.aggarwalankur.indoor_positioning.R;
+import com.aggarwalankur.indoor_positioning.common.IConstants;
+import com.aggarwalankur.indoor_positioning.core.trainingdata.TrainingDataManager;
 import com.aggarwalankur.indoor_positioning.core.xml.MapXmlHelper;
 
 public class IPSMainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -42,7 +45,21 @@ public class IPSMainActivity extends AppCompatActivity implements View.OnClickLi
 
                 break;
             case R.id.start_positioning:
-                mTrainingButton.setText("Bore");
+
+                try {
+
+                    String mapPath = TrainingDataManager.getInstance().getData().mapPath;
+
+                    //Intent to map draw activity
+                    Intent addAnchorsIntent = new Intent(this, MapActivity.class);
+                    addAnchorsIntent.putExtra(IConstants.INTENT_EXTRAS.MAP_PATH, mapPath);
+                    addAnchorsIntent.putExtra(IConstants.INTENT_EXTRAS.MODE, IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING);
+                    startActivity(addAnchorsIntent);
+                }catch(Exception e){
+                    e.printStackTrace();
+
+                    Toast.makeText(getApplicationContext(), "Invalid map data. Please check again", Toast.LENGTH_SHORT).show();
+                }
                 break;
         }
     }

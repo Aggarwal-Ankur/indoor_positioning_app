@@ -5,7 +5,10 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.MifareUltralight;
 import android.util.Log;
-import android.widget.Toast;
+
+import com.aggarwalankur.indoor_positioning.core.listeners.NfcListener;
+
+import java.util.ArrayList;
 
 /**
  * Created by Ankur on 15-Mar-16.
@@ -15,6 +18,8 @@ public class NfcHelper {
     private static NfcHelper mInstance;
 
     private static final String TAG = "NfcHelper";
+
+    private ArrayList<NfcListener> mListenerList = new ArrayList<>();
 
     private NfcHelper(){
 
@@ -28,7 +33,20 @@ public class NfcHelper {
         return mInstance;
     }
 
+    public void addListener(NfcListener listener){
+        if(!mListenerList.contains(listener)){
+            mListenerList.add(listener);
+        }
+    }
+
+    public void removeListener(NfcListener listener){
+        if(mListenerList.contains(listener)){
+            mListenerList.remove(listener);
+        }
+    }
+
     public String getNfcTag(Intent intent){
+        long timestamp = System.currentTimeMillis();
         Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
         byte[] id = tag.getId();
 
@@ -64,6 +82,12 @@ public class NfcHelper {
                         break;
                 }
             }
+        }
+
+
+        //Also, send the tag event to listeners
+        for(NfcListener currentListener : mListenerList){
+            currentListener.onNfcTagScanned(idValue, timestamp);
         }
 
         return idValue;
