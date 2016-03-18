@@ -2,10 +2,13 @@ package com.aggarwalankur.indoor_positioning.activities;
 
 import android.app.FragmentTransaction;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.graphics.PointF;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
@@ -20,6 +23,7 @@ import android.widget.Toast;
 
 import com.aggarwalankur.indoor_positioning.R;
 import com.aggarwalankur.indoor_positioning.common.IConstants;
+import com.aggarwalankur.indoor_positioning.core.direction.DirectionHelper;
 import com.aggarwalankur.indoor_positioning.core.listeners.SelectedAnchorListener;
 import com.aggarwalankur.indoor_positioning.core.nfc.NfcHelper;
 import com.aggarwalankur.indoor_positioning.core.trainingdata.AnchorPOJO;
@@ -61,6 +65,8 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
     private NfcAdapter nfcAdpt;
 
     private PointF mIAmHereLocation;
+
+    private SensorManager mSensorManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,29 +124,11 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
         //Check mode and add
         if((mMode == IConstants.MAP_ACTIVITY_MODES.MODE_SET_ANCHORS
                 || mMode == IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING)) {
-            nfcAdpt = NfcAdapter.getDefaultAdapter(this);
-            // Check if the smartphone has NFC
-            if (nfcAdpt == null) {
-                Toast.makeText(this, "NFC not supported", Toast.LENGTH_LONG).show();
-                finish();
-            }
-            // Check if NFC is enabled
-            if (!nfcAdpt.isEnabled()) {
-                Toast.makeText(this, "Enable NFC before using the app", Toast.LENGTH_LONG).show();
-            }
+            initNfc();
+        }
 
-            Intent nfcIntent = new Intent(this, getClass());
-            nfcIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-            nfcPendingIntent = PendingIntent.getActivity(this, 0, nfcIntent, 0);
-
-            IntentFilter tagIntentFilter = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
-            try {
-                tagIntentFilter.addDataType("text/plain");
-                nfcIntentFiltersArray = new IntentFilter[]{tagIntentFilter};
-            } catch (Throwable t) {
-                t.printStackTrace();
-            }
+        if(mMode == IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING){
+            mSensorManager = (SensorManager) this.getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
         }
 
 
@@ -182,6 +170,32 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
 
     }
 
+    private void initNfc(){
+        nfcAdpt = NfcAdapter.getDefaultAdapter(this);
+        // Check if the smartphone has NFC
+        if (nfcAdpt == null) {
+            Toast.makeText(this, "NFC not supported", Toast.LENGTH_LONG).show();
+            finish();
+        }
+        // Check if NFC is enabled
+        if (!nfcAdpt.isEnabled()) {
+            Toast.makeText(this, "Enable NFC before using the app", Toast.LENGTH_LONG).show();
+        }
+
+        Intent nfcIntent = new Intent(this, getClass());
+        nfcIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+        nfcPendingIntent = PendingIntent.getActivity(this, 0, nfcIntent, 0);
+
+        IntentFilter tagIntentFilter = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
+        try {
+            tagIntentFilter.addDataType("text/plain");
+            nfcIntentFiltersArray = new IntentFilter[]{tagIntentFilter};
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+    }
+
 
     @Override
     protected void onResume() {
@@ -194,7 +208,24 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
                     null,
                     null);
         }
+
+        if(mMode == IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING){
+            DirectionHelper directionHelper = DirectionHelper.getInstance();
+
+            mSensorManager.registerListener(directionHelper, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
+            mSensorManager.registerListener(directionHelper, mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), SensorManager.SENSOR_DELAY_UI);
+            directionHelper.resetFirstReading();
+        }
         handleIntent(getIntent());
+    }
+
+    @Override
+    protected void onPause() {
+        if(mMode == IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING) {
+            mSensorManager.unregisterListener(DirectionHelper.getInstance());
+        }
+
+        super.onPause();
     }
 
     private void handleIntent(Intent intent) {

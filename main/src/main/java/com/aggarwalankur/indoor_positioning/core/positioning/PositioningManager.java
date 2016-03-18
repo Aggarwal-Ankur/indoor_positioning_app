@@ -1,5 +1,7 @@
 package com.aggarwalankur.indoor_positioning.core.positioning;
 
+import com.aggarwalankur.indoor_positioning.core.direction.DirectionHelper;
+import com.aggarwalankur.indoor_positioning.core.listeners.DirectionListener;
 import com.aggarwalankur.indoor_positioning.core.listeners.NfcListener;
 import com.aggarwalankur.indoor_positioning.core.listeners.StepDetectionListener;
 import com.aggarwalankur.indoor_positioning.core.nfc.NfcHelper;
@@ -19,7 +21,7 @@ import java.util.ArrayList;
  *
  * For ease, I have made this singleton as well
  */
-public class PositioningManager implements NfcListener, WiFiListener, StepDetectionListener{
+public class PositioningManager implements NfcListener, WiFiListener, StepDetectionListener, DirectionListener{
     private static final String TAG = "PositioningManager";
 
 
@@ -46,6 +48,8 @@ public class PositioningManager implements NfcListener, WiFiListener, StepDetect
         WifiHelper.getInstance().addListener(this, null);
 
         StepDetector.getInstance().addListener(this);
+
+        DirectionHelper.getInstance().addListener(this);
     }
 
     public void stopLocationTracking(){
@@ -54,6 +58,7 @@ public class PositioningManager implements NfcListener, WiFiListener, StepDetect
         NfcHelper.getInstance().removeListener(this);
         WifiHelper.getInstance().removeListener(this, null);
         StepDetector.getInstance().removeListener(this);
+        DirectionHelper.getInstance().removeListener(this);
     }
 
 
@@ -69,6 +74,11 @@ public class PositioningManager implements NfcListener, WiFiListener, StepDetect
 
     @Override
     public void onStepDetected(int count, long timestamp) {
+
+    }
+
+    @Override
+    public void onDirectionListener(int direction, long timeStamp) {
 
     }
 }
