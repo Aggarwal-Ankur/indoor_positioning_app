@@ -63,7 +63,9 @@ public class DirectionHelper implements SensorEventListener {
             case Sensor.TYPE_ACCELEROMETER:
                 accelerometerValues = event.values.clone();
 
-                //Initial adjustment in gravity
+                //Initial adjustment in gravity.
+                // This is not picked from any document, but comes from actual testing on Nexus 6 device
+                //Value MUST be changed for testing on any other device
                 accelerometerValues[2] = (float)(accelerometerValues[2] - (10.2537-9.8));
 
                 break;
