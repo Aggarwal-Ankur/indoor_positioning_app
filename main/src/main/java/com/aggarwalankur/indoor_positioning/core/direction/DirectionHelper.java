@@ -1,13 +1,19 @@
 package com.aggarwalankur.indoor_positioning.core.direction;
 
+import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.aggarwalankur.indoor_positioning.core.listeners.DirectionListener;
 
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Created by Ankur on 18-Mar-16.
@@ -25,14 +31,32 @@ public class DirectionHelper implements SensorEventListener {
     private int lastPitch;
     private int lastRoll;
     private boolean firstReading = true;
+    private Handler mHandler;
+    private CountDownLatch mStartCountdown = new CountDownLatch(1);
 
     private DirectionHelper(){
         mDirectionListeners = new ArrayList<>();
+
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Looper.prepare();
+                mHandler = new Handler();
+                mStartCountdown.countDown();
+                Looper.loop();
+            }
+        });
+
+        t.start();
     }
 
-    public synchronized static DirectionHelper getInstance(){
+    private static Context mContext;
+
+    public synchronized static DirectionHelper getInstance(Context context){
         if(mInstance == null){
             mInstance = new DirectionHelper();
+
+            mContext = context.getApplicationContext();
         }
 
         return mInstance;
@@ -86,16 +110,58 @@ public class DirectionHelper implements SensorEventListener {
             float values[] = new float[4];
             SensorManager.getOrientation(outR,values);
 
+            boolean success = SensorManager.getRotationMatrix(R, I, accelerometerValues, geomagneticMatrix);
+            if (success) {
+                float orientation[] = new float[3];
+                SensorManager.getOrientation(R, orientation);
+                int azimut =(int) orientation[0]; // orientation contains: azimut, pitch and roll
+
+            }
+
             int direction = normalizeDegrees(filterChange((int)Math.toDegrees(values[0])));
             int pitch = normalizeDegrees(Math.toDegrees(values[1]));
             int roll = normalizeDegrees(Math.toDegrees(values[2]));
+
+            if(lastDirection == -1){
+                try {
+                    mStartCountdown.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                mHandler.post(mDirectionSendRunnable);
+            }
+
             if((int)direction != (int)lastDirection){
                 lastDirection = (int)direction;
                 lastPitch = (int)pitch;
                 lastRoll = (int)roll;
+
+                Log.d(TAG, "Direction = " + lastDirection);
             }
         }
     }
+
+
+    private Runnable mDirectionSendRunnable = new Runnable() {
+        @Override
+        public void run() {
+            long timestamp = System.currentTimeMillis();
+
+            if(mDirectionListeners != null &&
+                    !mDirectionListeners.isEmpty()){
+                Log.d(TAG, "Sending Direction = "+lastDirection );
+
+                Toast.makeText(mContext, "Direction = "+lastDirection, Toast.LENGTH_SHORT).show();
+                for(DirectionListener currentListener : mDirectionListeners){
+                    currentListener.onDirectionListener(lastDirection, timestamp);
+                }
+            }
+
+            mHandler.postDelayed(mDirectionSendRunnable, 3000);
+        }
+    };
+
+
 
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 

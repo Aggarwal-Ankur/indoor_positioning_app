@@ -63,7 +63,7 @@ public class PositioningManager implements NfcListener, WiFiListener, StepDetect
 
         StepDetector.getInstance().addListener(this);
 
-        DirectionHelper.getInstance().addListener(this);
+        DirectionHelper.getInstance(null).addListener(this);
     }
 
     public void stopLocationTracking(){
@@ -72,7 +72,7 @@ public class PositioningManager implements NfcListener, WiFiListener, StepDetect
         NfcHelper.getInstance().removeListener(this);
         WifiHelper.getInstance().removeListener(this, null);
         StepDetector.getInstance().removeListener(this);
-        DirectionHelper.getInstance().removeListener(this);
+        DirectionHelper.getInstance(null).removeListener(this);
     }
 
 

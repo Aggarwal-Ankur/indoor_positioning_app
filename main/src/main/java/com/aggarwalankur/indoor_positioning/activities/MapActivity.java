@@ -67,6 +67,8 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
     private PointF mIAmHereLocation;
 
     private SensorManager mSensorManager;
+    private Sensor accelerometer;
+    private Sensor magnetometer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,6 +131,8 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
 
         if(mMode == IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING){
             mSensorManager = (SensorManager) this.getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
+            accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            magnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         }
 
 
@@ -210,10 +214,10 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
         }
 
         if(mMode == IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING){
-            DirectionHelper directionHelper = DirectionHelper.getInstance();
+            DirectionHelper directionHelper = DirectionHelper.getInstance(this);
 
-            mSensorManager.registerListener(directionHelper, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
-            mSensorManager.registerListener(directionHelper, mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), SensorManager.SENSOR_DELAY_UI);
+            mSensorManager.registerListener(directionHelper, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+            mSensorManager.registerListener(directionHelper, magnetometer, SensorManager.SENSOR_DELAY_UI);
             directionHelper.resetFirstReading();
         }
         handleIntent(getIntent());
@@ -222,7 +226,7 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
     @Override
     protected void onPause() {
         if(mMode == IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING) {
-            mSensorManager.unregisterListener(DirectionHelper.getInstance());
+            mSensorManager.unregisterListener(DirectionHelper.getInstance(this));
         }
 
         super.onPause();
@@ -267,8 +271,8 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
                 getMenuInflater().inflate(R.menu.menu_train_wifi, menu);
                 return true;
             case IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING :
-                getMenuInflater().inflate(R.menu.menu_map, menu);
-                return true;
+
+                return false;
 
             default :
                 return false;
