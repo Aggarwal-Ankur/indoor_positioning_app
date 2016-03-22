@@ -26,6 +26,7 @@ import com.aggarwalankur.indoor_positioning.common.IConstants;
 import com.aggarwalankur.indoor_positioning.core.direction.DirectionHelper;
 import com.aggarwalankur.indoor_positioning.core.listeners.SelectedAnchorListener;
 import com.aggarwalankur.indoor_positioning.core.nfc.NfcHelper;
+import com.aggarwalankur.indoor_positioning.core.stepdetection.StepDetector;
 import com.aggarwalankur.indoor_positioning.core.trainingdata.AnchorPOJO;
 import com.aggarwalankur.indoor_positioning.core.trainingdata.TrainingDataManager;
 import com.aggarwalankur.indoor_positioning.core.wifi.WiFiListener;
@@ -69,6 +70,11 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
     private SensorManager mSensorManager;
     private Sensor accelerometer;
     private Sensor magnetometer;
+    private Sensor stepDetector;
+
+
+    private DirectionHelper mDirectionHelper;
+    private StepDetector mStepDetectionHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,6 +139,7 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
             mSensorManager = (SensorManager) this.getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
             accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
             magnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+            stepDetector = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
         }
 
 
@@ -214,11 +221,16 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
         }
 
         if(mMode == IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING){
-            DirectionHelper directionHelper = DirectionHelper.getInstance(this);
+            mDirectionHelper = DirectionHelper.getInstance(this);
 
-            mSensorManager.registerListener(directionHelper, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-            mSensorManager.registerListener(directionHelper, magnetometer, SensorManager.SENSOR_DELAY_UI);
-            directionHelper.resetFirstReading();
+            mSensorManager.registerListener(mDirectionHelper, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+            mSensorManager.registerListener(mDirectionHelper, magnetometer, SensorManager.SENSOR_DELAY_UI);
+            mDirectionHelper.resetFirstReading();
+
+            //Step detector
+            mStepDetectionHelper = StepDetector.getInstance();
+            mSensorManager.registerListener(mStepDetectionHelper, stepDetector, SensorManager.SENSOR_DELAY_NORMAL);
+
         }
         handleIntent(getIntent());
     }
@@ -226,7 +238,8 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
     @Override
     protected void onPause() {
         if(mMode == IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING) {
-            mSensorManager.unregisterListener(DirectionHelper.getInstance(this));
+            mSensorManager.unregisterListener(mDirectionHelper);
+            mSensorManager.unregisterListener(mStepDetectionHelper);
         }
 
         super.onPause();
