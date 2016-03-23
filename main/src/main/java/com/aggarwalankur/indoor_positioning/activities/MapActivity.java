@@ -2,6 +2,8 @@ package com.aggarwalankur.indoor_positioning.activities;
 
 import android.app.FragmentTransaction;
 import android.app.PendingIntent;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -76,6 +78,8 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
     private DirectionHelper mDirectionHelper;
     private StepDetector mStepDetectionHelper;
 
+    private BluetoothAdapter bluetoothAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -140,6 +144,16 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
             accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
             magnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
             stepDetector = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
+
+
+            final BluetoothManager bluetoothManager =
+                    (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+            bluetoothAdapter = bluetoothManager.getAdapter();
+
+            if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, 1);
+            }
         }
 
 

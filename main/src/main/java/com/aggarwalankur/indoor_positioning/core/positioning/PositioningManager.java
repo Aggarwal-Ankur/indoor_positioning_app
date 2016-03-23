@@ -2,7 +2,9 @@ package com.aggarwalankur.indoor_positioning.core.positioning;
 
 import android.util.Log;
 
+import com.aggarwalankur.indoor_positioning.core.ble.BLEScanHelper;
 import com.aggarwalankur.indoor_positioning.core.direction.DirectionHelper;
+import com.aggarwalankur.indoor_positioning.core.listeners.BleScanListener;
 import com.aggarwalankur.indoor_positioning.core.listeners.DirectionListener;
 import com.aggarwalankur.indoor_positioning.core.listeners.NfcListener;
 import com.aggarwalankur.indoor_positioning.core.listeners.StepDetectionListener;
@@ -29,7 +31,8 @@ import java.util.Iterator;
  *
  * For ease, I have made this singleton as well
  */
-public class PositioningManager implements NfcListener, WiFiListener, StepDetectionListener, DirectionListener{
+public class PositioningManager implements NfcListener, WiFiListener
+        , StepDetectionListener, DirectionListener, BleScanListener{
     private static final String TAG = "PositioningManager";
 
 
@@ -64,6 +67,8 @@ public class PositioningManager implements NfcListener, WiFiListener, StepDetect
         StepDetector.getInstance().addListener(this);
 
         DirectionHelper.getInstance(null).addListener(this);
+
+        BLEScanHelper.getInstance().addListener(this);
     }
 
     public void stopLocationTracking(){
@@ -73,6 +78,8 @@ public class PositioningManager implements NfcListener, WiFiListener, StepDetect
         WifiHelper.getInstance().removeListener(this, null);
         StepDetector.getInstance().removeListener(this);
         DirectionHelper.getInstance(null).removeListener(this);
+
+        BLEScanHelper.getInstance().removeListener(this);
     }
 
 
@@ -171,6 +178,11 @@ public class PositioningManager implements NfcListener, WiFiListener, StepDetect
 
     @Override
     public void onDirectionListener(int direction, long timeStamp) {
+
+    }
+
+    @Override
+    public void onBleDeviceScanned(String id, long timestamp, int distanceInMetres) {
 
     }
 }
