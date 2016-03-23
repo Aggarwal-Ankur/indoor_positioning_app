@@ -4,6 +4,8 @@ import android.app.FragmentTransaction;
 import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -25,6 +27,7 @@ import android.widget.Toast;
 
 import com.aggarwalankur.indoor_positioning.R;
 import com.aggarwalankur.indoor_positioning.common.IConstants;
+import com.aggarwalankur.indoor_positioning.core.ble.BLEScanHelper;
 import com.aggarwalankur.indoor_positioning.core.direction.DirectionHelper;
 import com.aggarwalankur.indoor_positioning.core.listeners.SelectedAnchorListener;
 import com.aggarwalankur.indoor_positioning.core.nfc.NfcHelper;
@@ -79,6 +82,7 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
     private StepDetector mStepDetectionHelper;
 
     private BluetoothAdapter bluetoothAdapter;
+    private BluetoothLeScanner mBluetoothLeScanner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,6 +141,8 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
         if((mMode == IConstants.MAP_ACTIVITY_MODES.MODE_SET_ANCHORS
                 || mMode == IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING)) {
             initNfc();
+
+            initBle();
         }
 
         if(mMode == IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING){
@@ -146,14 +152,7 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
             stepDetector = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
 
 
-            final BluetoothManager bluetoothManager =
-                    (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-            bluetoothAdapter = bluetoothManager.getAdapter();
 
-            if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
-                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableBtIntent, 1);
-            }
         }
 
 
@@ -221,6 +220,14 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
         }
     }
 
+    private void initBle(){
+        final BluetoothManager bluetoothManager =
+                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        bluetoothAdapter = bluetoothManager.getAdapter();
+
+        mBluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
+    }
+
 
     @Override
     protected void onResume() {
@@ -232,6 +239,19 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
                     nfcPendingIntent,
                     null,
                     null);
+
+            if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
+                //Bluetooth is disabled
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivity(enableBtIntent);
+            }
+
+            //Begin scanning for LE devices
+            ScanSettings settings = new ScanSettings.Builder()
+                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                    .build();
+
+            mBluetoothLeScanner.startScan(null, settings, BLEScanHelper.getInstance());
         }
 
         if(mMode == IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING){
@@ -245,15 +265,20 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
             mStepDetectionHelper = StepDetector.getInstance();
             mSensorManager.registerListener(mStepDetectionHelper, stepDetector, SensorManager.SENSOR_DELAY_NORMAL);
 
+
         }
         handleIntent(getIntent());
     }
+
 
     @Override
     protected void onPause() {
         if(mMode == IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING) {
             mSensorManager.unregisterListener(mDirectionHelper);
             mSensorManager.unregisterListener(mStepDetectionHelper);
+
+
+            mBluetoothLeScanner.stopScan(BLEScanHelper.getInstance());
         }
 
         super.onPause();
