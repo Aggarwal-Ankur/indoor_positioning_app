@@ -1,7 +1,6 @@
 package com.aggarwalankur.indoor_positioning.core.ble;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
+import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.util.Log;
@@ -65,9 +64,37 @@ public class BLEScanHelper extends ScanCallback {
         Log.w(TAG, "LE Scan Failed: "+errorCode);
     }
 
+
+
     private void processResult(ScanResult result) {
         Log.i(TAG, "New LE Device: " + result.getDevice().getName() + " @ " + result.getRssi());
 
+        if(!mListeners.isEmpty()) {
+
+            long timeStamp = System.currentTimeMillis();
+
+            int txPower = result.getScanRecord().getTxPowerLevel();
+
+            int rssi = result.getRssi();
+
+            double distance = getDistance(rssi, txPower);
+
+            for(BleScanListener currentListener : mListeners){
+                currentListener.onBleDeviceScanned(result.getDevice().getAddress(), timeStamp, distance);
+            }
+        }
+    }
+
+
+    double getDistance(int rssi, int txPower) {
+    /*
+     * RSSI = TxPower - 10 * n * lg(d)
+     * n = 2 (in free space)
+     *
+     * d = 10 ^ ((TxPower - RSSI) / (10 * n))
+     */
+
+        return Math.pow(10d, ((double) txPower - rssi) / (10 * 2));
     }
 }
 

@@ -29,6 +29,7 @@ import com.aggarwalankur.indoor_positioning.R;
 import com.aggarwalankur.indoor_positioning.common.IConstants;
 import com.aggarwalankur.indoor_positioning.core.ble.BLEScanHelper;
 import com.aggarwalankur.indoor_positioning.core.direction.DirectionHelper;
+import com.aggarwalankur.indoor_positioning.core.listeners.BleScanListener;
 import com.aggarwalankur.indoor_positioning.core.listeners.SelectedAnchorListener;
 import com.aggarwalankur.indoor_positioning.core.nfc.NfcHelper;
 import com.aggarwalankur.indoor_positioning.core.stepdetection.StepDetector;
@@ -42,7 +43,8 @@ import com.aggarwalankur.indoor_positioning.fragments.WifiListDialogFragment;
 
 import java.util.ArrayList;
 
-public class MapActivity extends AppCompatActivity implements WiFiListener, View.OnClickListener, SelectedAnchorListener {
+public class MapActivity extends AppCompatActivity implements WiFiListener, View.OnClickListener
+        , SelectedAnchorListener, BleScanListener {
 
     private final String TAG = "MapActivity";
 
@@ -266,6 +268,8 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
             mSensorManager.registerListener(mStepDetectionHelper, stepDetector, SensorManager.SENSOR_DELAY_NORMAL);
 
 
+        }else if(mMode == IConstants.MAP_ACTIVITY_MODES.MODE_SET_ANCHORS){
+            BLEScanHelper.getInstance().addListener(this);
         }
         handleIntent(getIntent());
     }
@@ -279,6 +283,8 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
 
 
             mBluetoothLeScanner.stopScan(BLEScanHelper.getInstance());
+        }else if(mMode == IConstants.MAP_ACTIVITY_MODES.MODE_SET_ANCHORS){
+            BLEScanHelper.getInstance().removeListener(this);
         }
 
         super.onPause();
@@ -485,5 +491,11 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
     public void onAnchorSelected(String id, int type) {
         mSelectedAnchor = id;
         selectedAnchorType = type;
+    }
+
+    @Override
+    public void onBleDeviceScanned(String id, long timestamp, double distanceInMeters) {
+        mSelectedAnchor = id;
+        Toast.makeText(this, "Tag found: "+ mSelectedAnchor, Toast.LENGTH_SHORT).show();
     }
 }

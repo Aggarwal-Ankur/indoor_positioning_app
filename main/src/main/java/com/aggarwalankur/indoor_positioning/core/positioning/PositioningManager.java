@@ -1,5 +1,6 @@
 package com.aggarwalankur.indoor_positioning.core.positioning;
 
+import android.graphics.PointF;
 import android.util.Log;
 
 import com.aggarwalankur.indoor_positioning.core.ble.BLEScanHelper;
@@ -30,6 +31,14 @@ import java.util.Iterator;
  * the wifi training data and provides a position
  *
  * For ease, I have made this singleton as well
+ *
+ * Algo:
+ * 1. Always keep storing direction updates
+ * 2. If position = null, don't consider step updates
+ * 3. If position = null and received Wi-Fi scan, initiate cross-referencing
+ * 4. If received WiFi scan, keep accumulating. Accumulate for 3 readings, and then initiate cross-referencing
+ * 5. If received step count, flush old WiFi data
+ * 6. If received BLE data, and position != null, calculate new position with "pull back"
  */
 public class PositioningManager implements NfcListener, WiFiListener
         , StepDetectionListener, DirectionListener, BleScanListener{
@@ -40,8 +49,15 @@ public class PositioningManager implements NfcListener, WiFiListener
 
     private TrainingDataPOJO mTrainingData;
 
-    private PositioningManager(){
+    private WiFiDataPoint wifiAccumulatedPoint;
 
+    private int currentWifiScanCount = 0;
+    private PointF currentPosition = null;
+
+    private int direction = -1;
+
+    private PositioningManager(){
+        wifiAccumulatedPoint = new WiFiDataPoint();
     }
 
     public synchronized static PositioningManager getInstance(){
@@ -80,12 +96,9 @@ public class PositioningManager implements NfcListener, WiFiListener
         DirectionHelper.getInstance(null).removeListener(this);
 
         BLEScanHelper.getInstance().removeListener(this);
-    }
 
-
-    @Override
-    public void onNfcTagScanned(String id, long timestamp) {
-        //CrossReference with training data
+        currentPosition = null;
+        direction = -1;
     }
 
     @Override
@@ -174,15 +187,40 @@ public class PositioningManager implements NfcListener, WiFiListener
     @Override
     public void onStepDetected(int count, long timestamp) {
 
+        if(currentPosition == null
+                || direction < 0){
+            return;
+        }
+
+        float d = count * mTrainingData.stepLength;
+
+        //Dead reckoning!!
+        PointF position = new PointF();
+
+        //orienatation in radians
+        double orientation = (direction - mTrainingData.mapBearing) * Math.PI/ 180;
+
+        position.x   = (float)(currentPosition.x +  d* Math.sin(orientation));
+        position.y   = (float)(currentPosition.y +  d* Math.cos(orientation));
+
+        Log.d(TAG, "onStepDetected. Position.x ="+position.x+"  :Position.y="+position.y);
+
     }
 
     @Override
     public void onDirectionListener(int direction, long timeStamp) {
 
+        this.direction = direction;
+
     }
 
     @Override
-    public void onBleDeviceScanned(String id, long timestamp, int distanceInMetres) {
+    public void onNfcTagScanned(String id, long timestamp) {
+        //CrossReference with training data
+    }
+
+    @Override
+    public void onBleDeviceScanned(String id, long timestamp, double distanceInMetres) {
 
     }
 }
