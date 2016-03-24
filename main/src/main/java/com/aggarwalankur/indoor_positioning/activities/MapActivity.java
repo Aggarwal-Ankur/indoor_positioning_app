@@ -32,6 +32,7 @@ import com.aggarwalankur.indoor_positioning.core.direction.DirectionHelper;
 import com.aggarwalankur.indoor_positioning.core.listeners.BleScanListener;
 import com.aggarwalankur.indoor_positioning.core.listeners.SelectedAnchorListener;
 import com.aggarwalankur.indoor_positioning.core.nfc.NfcHelper;
+import com.aggarwalankur.indoor_positioning.core.positioning.PositioningManager;
 import com.aggarwalankur.indoor_positioning.core.stepdetection.StepDetector;
 import com.aggarwalankur.indoor_positioning.core.trainingdata.AnchorPOJO;
 import com.aggarwalankur.indoor_positioning.core.trainingdata.TrainingDataManager;
@@ -85,6 +86,9 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
 
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothLeScanner mBluetoothLeScanner;
+
+
+    private PositioningManager mPositionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,7 +157,7 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
             magnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
             stepDetector = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
 
-
+            mPositionManager = PositioningManager.getInstance();
 
         }
 
@@ -191,6 +195,11 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
 
             case IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING :
                 setTitle("Indoor Positioning");
+
+                mOKButton.setVisibility(View.GONE);
+                mCancelButton.setVisibility(View.GONE);
+                mIAMHereButton.setVisibility(View.GONE);
+                mStopTrainingWifiButton.setVisibility(View.GONE);
                 break;
         }
 
@@ -254,6 +263,9 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
                     .build();
 
             mBluetoothLeScanner.startScan(null, settings, BLEScanHelper.getInstance());
+
+
+
         }
 
         if(mMode == IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING){
@@ -267,7 +279,7 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
             mStepDetectionHelper = StepDetector.getInstance();
             mSensorManager.registerListener(mStepDetectionHelper, stepDetector, SensorManager.SENSOR_DELAY_NORMAL);
 
-
+            mPositionManager.startLocationTracking();
         }else if(mMode == IConstants.MAP_ACTIVITY_MODES.MODE_SET_ANCHORS){
             BLEScanHelper.getInstance().addListener(this);
         }
@@ -283,6 +295,8 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
 
 
             mBluetoothLeScanner.stopScan(BLEScanHelper.getInstance());
+
+            mPositionManager.stopLocationTracking();
         }else if(mMode == IConstants.MAP_ACTIVITY_MODES.MODE_SET_ANCHORS){
             BLEScanHelper.getInstance().removeListener(this);
         }

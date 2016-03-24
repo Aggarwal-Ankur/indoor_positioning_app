@@ -105,7 +105,59 @@ public class PositioningManager implements NfcListener, WiFiListener
     public void onWifiScanResultsReceived(ArrayList<WifiScanResult> scanResults, long timestamp) {
         Log.d(TAG, "onWifiScanResultsReceived. Timestamp="+ timestamp);
 
-        //CrossReference with training data
+        if(mTrainingData == null || mTrainingData.wiFiDataPoints== null || mTrainingData.wiFiDataPoints.isEmpty()){
+            return;
+        }
+
+        if(currentWifiScanCount == 0){
+            //First, lets get only what we want to track
+            Iterator<WifiScanResult> iter = scanResults.iterator();
+
+            while (iter.hasNext()){
+                WifiScanResult currentScanResult = iter.next();
+                boolean tracking = false;
+                for(AnchorPOJO currentAnchor : mTrainingData.anchorList){
+                    if(currentAnchor.id.equalsIgnoreCase(currentScanResult.bssid)){
+                        WifiDataPOJO currentWifiDataPojo = new WifiDataPOJO();
+                        currentWifiDataPojo.bssid = currentScanResult.bssid;
+                        currentWifiDataPojo.rssi = currentScanResult.level;
+
+                        wifiAccumulatedPoint.wifiData.add(currentWifiDataPojo);
+
+                        tracking = true;
+                        break;
+                    }
+                }
+
+                if(!tracking){
+                    iter.remove();
+                }
+            }
+        }else{
+            //Accumulate the Wifi data
+
+            for(WifiDataPOJO accumulatedWifiDataPojo : wifiAccumulatedPoint.wifiData){
+                for(WifiScanResult currentScanResult : scanResults){
+                    if(currentScanResult.bssid.equalsIgnoreCase(accumulatedWifiDataPojo.bssid)){
+                        double totalRssi = accumulatedWifiDataPojo.rssi * currentWifiScanCount + currentScanResult.level;
+
+                        double averageRssi = totalRssi / (currentWifiScanCount + 1);
+
+                        accumulatedWifiDataPojo.rssi = averageRssi;
+                    }
+                }
+            }
+
+
+            currentWifiScanCount = currentWifiScanCount + 1;
+        }
+
+        if(currentPosition != null && currentWifiScanCount< 3){
+            return;
+        }
+
+
+        /*//CrossReference with training data
 
         ArrayList<WifiScanResult> scanResultsTemp = (ArrayList<WifiScanResult>)scanResults.clone();
 
@@ -125,7 +177,7 @@ public class PositioningManager implements NfcListener, WiFiListener
             if(!tracking){
                 iter.remove();
             }
-        }
+        }*/
 
         //Now, let us calculate the top 2 points with minimum deviation in rssi
 
@@ -140,11 +192,11 @@ public class PositioningManager implements NfcListener, WiFiListener
             float currentDeviation = 0;
 
             for(WifiDataPOJO currentWifiPojo : currentWifiDataPoint.wifiData){
-                innerFor: for(WifiScanResult currentScanResult : scanResultsTemp){
-                    if(currentScanResult.bssid.equalsIgnoreCase(currentWifiPojo.bssid)){
+                innerFor: for(WifiDataPOJO accumulatedWifiData : wifiAccumulatedPoint.wifiData){
+                    if(accumulatedWifiData.bssid.equalsIgnoreCase(currentWifiPojo.bssid)){
                         //Calculate deviation
 
-                        currentDeviation += Math.abs(currentScanResult.level - currentWifiPojo.rssi);
+                        currentDeviation += Math.abs(accumulatedWifiData.rssi - currentWifiPojo.rssi);
                         break innerFor;
                     }
                 }
@@ -202,6 +254,9 @@ public class PositioningManager implements NfcListener, WiFiListener
 
         position.x   = (float)(currentPosition.x +  d* Math.sin(orientation));
         position.y   = (float)(currentPosition.y +  d* Math.cos(orientation));
+
+        //Flush the old WiFi data
+        currentWifiScanCount = 0;
 
         Log.d(TAG, "onStepDetected. Position.x ="+position.x+"  :Position.y="+position.y);
 
