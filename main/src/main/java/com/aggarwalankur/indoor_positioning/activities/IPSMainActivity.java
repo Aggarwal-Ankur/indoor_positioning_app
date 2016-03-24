@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import com.aggarwalankur.indoor_positioning.R;
 import com.aggarwalankur.indoor_positioning.common.IConstants;
+import com.aggarwalankur.indoor_positioning.core.logger.IPSLogger;
 import com.aggarwalankur.indoor_positioning.core.trainingdata.TrainingDataManager;
 import com.aggarwalankur.indoor_positioning.core.xml.MapXmlHelper;
 
@@ -31,6 +32,10 @@ public class IPSMainActivity extends AppCompatActivity implements View.OnClickLi
 
 
         MapXmlHelper.getInstance(this).loadXml();
+
+        IPSLogger ipsLogger = new IPSLogger();
+        ipsLogger.setName("Logger_thread");
+        ipsLogger.start();
 
     }
 
