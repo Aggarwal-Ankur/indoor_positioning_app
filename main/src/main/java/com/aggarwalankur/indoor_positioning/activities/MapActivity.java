@@ -90,6 +90,8 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
 
     private PositioningManager mPositionManager;
 
+    private String bleTempId = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -245,11 +247,11 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
         super.onResume();
         if((mMode == IConstants.MAP_ACTIVITY_MODES.MODE_SET_ANCHORS
                 || mMode == IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING)) {
-            nfcAdpt.enableForegroundDispatch(
+            /*nfcAdpt.enableForegroundDispatch(
                     this,
                     nfcPendingIntent,
                     null,
-                    null);
+                    null);*/
 
             if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
                 //Bluetooth is disabled
@@ -356,7 +358,11 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.place_bt:
-                Toast.makeText(this.getApplicationContext(), "BT", Toast.LENGTH_SHORT).show();
+                mSelectedAnchor = bleTempId;
+                selectedAnchorType = IConstants.ANCHOR_TYPE.BLE;
+
+                mOKButton.setEnabled(true);
+                mCancelButton.setEnabled(true);
                 break;
 
             case R.id.place_wifi:
@@ -499,6 +505,7 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
     private void refreshAnchorData(){
         mSelectedAnchor = "";
         selectedAnchorType = IConstants.ANCHOR_TYPE.UNDEFINED;
+        bleTempId = "";
     }
 
     @Override
@@ -509,7 +516,7 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
 
     @Override
     public void onBleDeviceScanned(String id, long timestamp, double distanceInMeters) {
-        mSelectedAnchor = id;
-        Toast.makeText(this, "Tag found: "+ mSelectedAnchor, Toast.LENGTH_SHORT).show();
+        bleTempId = id;
+        Toast.makeText(this, "BLE Device found: "+ id, Toast.LENGTH_SHORT).show();
     }
 }

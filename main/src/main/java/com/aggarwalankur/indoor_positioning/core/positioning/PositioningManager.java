@@ -133,6 +133,8 @@ public class PositioningManager implements NfcListener, WiFiListener
                     iter.remove();
                 }
             }
+
+            currentWifiScanCount = 1;
         }else{
             //Accumulate the Wifi data
 

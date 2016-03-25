@@ -73,7 +73,8 @@ public class BLEScanHelper extends ScanCallback {
 
             long timeStamp = System.currentTimeMillis();
 
-            int txPower = result.getScanRecord().getTxPowerLevel();
+            //Hardcoded as we know this is an AltBeacon
+            int txPower = -56;
 
             int rssi = result.getRssi();
 
