@@ -1,8 +1,8 @@
 <resources>
-    <string name="app_name">Indoor Positioning</string>
+    <string name="app_name">Indoor Positioning PoC</string>
     <string name="start_training">Start training the app</string>
     <string name="start_indoor_positioning">Start Indoor Positioning</string>
-    <string name="title_activity_training_settings">Training App</string>
+    <string name="title_activity_training_settings">Settings</string>
 
 
     <!-- Used in training settings-->

@@ -151,7 +151,7 @@ public class DirectionHelper implements SensorEventListener {
                     !mDirectionListeners.isEmpty()){
                 Log.d(TAG, "Sending Direction = "+lastDirection );
 
-                Toast.makeText(mContext, "Direction = "+lastDirection, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(mContext, "Direction = "+lastDirection, Toast.LENGTH_SHORT).show();
                 for(DirectionListener currentListener : mDirectionListeners){
                     currentListener.onDirectionListener(lastDirection, timestamp);
                 }

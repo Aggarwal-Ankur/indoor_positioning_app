@@ -45,7 +45,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:visibility="gone"
-            android:text="I am\nHere"/>
+            android:text="I am Here"/>
 
         <Button
             android:id="@+id/button_wifi_train_end"

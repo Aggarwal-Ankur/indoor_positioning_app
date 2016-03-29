@@ -73,8 +73,6 @@ public class Panel extends View{
     private Bitmap backupMap = null;
     public DisplayMetrics metrics;
 
-    private int mMode = 0;
-
     private static  int Y_OFFSET = 0;
 
     public Panel(Context context) {
@@ -187,7 +185,7 @@ public class Panel extends View{
         }
 
         canvas.restore();
-        if (mMode == 0){
+        if (mode != IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING){
             canvas.drawBitmap(crosshair, crosshairCoords.x - crosshairWidth/ 2, crosshairCoords.y - crosshairHeight/ 2, null);
         }
 
@@ -345,4 +343,5 @@ public class Panel extends View{
     public void resetIamHereLocations(){
         iAmHereLocations.clear();
     }
+
 }

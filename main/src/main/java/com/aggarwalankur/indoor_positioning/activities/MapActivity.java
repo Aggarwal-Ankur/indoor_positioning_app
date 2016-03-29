@@ -10,11 +10,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.PointF;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -23,6 +25,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aggarwalankur.indoor_positioning.R;
@@ -196,7 +199,7 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
                 break;
 
             case IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING :
-                setTitle("Indoor Positioning");
+                setTitle("Positioning");
 
                 mOKButton.setVisibility(View.GONE);
                 mCancelButton.setVisibility(View.GONE);
@@ -247,11 +250,11 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
         super.onResume();
         if((mMode == IConstants.MAP_ACTIVITY_MODES.MODE_SET_ANCHORS
                 || mMode == IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING)) {
-            /*nfcAdpt.enableForegroundDispatch(
+            nfcAdpt.enableForegroundDispatch(
                     this,
                     nfcPendingIntent,
                     null,
-                    null);*/
+                    null);
 
             if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
                 //Bluetooth is disabled
@@ -517,6 +520,6 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
     @Override
     public void onBleDeviceScanned(String id, long timestamp, double distanceInMeters) {
         bleTempId = id;
-        Toast.makeText(this, "BLE Device found: "+ id, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "BLE Device found: "+ id, Toast.LENGTH_SHORT).show();
     }
 }
