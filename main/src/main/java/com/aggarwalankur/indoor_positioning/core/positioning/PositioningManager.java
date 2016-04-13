@@ -3,11 +3,13 @@ package com.aggarwalankur.indoor_positioning.core.positioning;
 import android.graphics.PointF;
 import android.util.Log;
 
+import com.aggarwalankur.indoor_positioning.common.IConstants;
 import com.aggarwalankur.indoor_positioning.core.ble.BLEScanHelper;
 import com.aggarwalankur.indoor_positioning.core.direction.DirectionHelper;
 import com.aggarwalankur.indoor_positioning.core.listeners.BleScanListener;
 import com.aggarwalankur.indoor_positioning.core.listeners.DirectionListener;
 import com.aggarwalankur.indoor_positioning.core.listeners.NfcListener;
+import com.aggarwalankur.indoor_positioning.core.listeners.PositionListener;
 import com.aggarwalankur.indoor_positioning.core.listeners.StepDetectionListener;
 import com.aggarwalankur.indoor_positioning.core.nfc.NfcHelper;
 import com.aggarwalankur.indoor_positioning.core.stepdetection.StepDetector;
@@ -56,8 +58,11 @@ public class PositioningManager implements NfcListener, WiFiListener
 
     private int direction = -1;
 
+    private ArrayList<PositionListener> mListeners;
+
     private PositioningManager(){
         wifiAccumulatedPoint = new WiFiDataPoint();
+        mListeners = new ArrayList<>();
     }
 
     public synchronized static PositioningManager getInstance(){
@@ -66,6 +71,18 @@ public class PositioningManager implements NfcListener, WiFiListener
         }
 
         return mInstance;
+    }
+
+    public synchronized void addListener(PositionListener listener){
+        if(mListeners != null && !mListeners.contains(listener)){
+            mListeners.add(listener);
+        }
+    }
+
+    public synchronized void removeListener(PositionListener listener){
+        if(mListeners != null && mListeners.contains(listener)){
+            mListeners.remove(listener);
+        }
     }
 
     public void startLocationTracking(){
@@ -260,7 +277,11 @@ public class PositioningManager implements NfcListener, WiFiListener
         //Flush the old WiFi data
         currentWifiScanCount = 0;
 
+        currentPosition = new PointF(position.x, position.y);
+
         Log.d(TAG, "onStepDetected. Position.x ="+position.x+"  :Position.y="+position.y);
+
+        sendPosition(currentPosition);
 
     }
 
@@ -274,10 +295,79 @@ public class PositioningManager implements NfcListener, WiFiListener
     @Override
     public void onNfcTagScanned(String id, long timestamp) {
         //CrossReference with training data
+
+        AnchorPOJO currentAnchor = null;
+
+        for(AnchorPOJO anchor : mTrainingData.anchorList){
+            if(anchor.id.equalsIgnoreCase(id) && anchor.type == IConstants.ANCHOR_TYPE.NFC){
+                currentAnchor = anchor;
+                break;
+            }
+        }
+
+        if(currentAnchor == null){
+            //No matching anchor found in training data
+            return;
+        }
+
+        PointF anchorLocation = new PointF(currentAnchor.x, currentAnchor.y);
+
+        PointF newLocation = pullBack(anchorLocation, currentPosition, 0.1F);
+
+        Log.d(TAG, "onNfcTagScanned. Position.x ="+newLocation.x+"  :Position.y="+newLocation.y);
+
+        sendPosition(newLocation);
+
     }
 
     @Override
     public void onBleDeviceScanned(String id, long timestamp, double distanceInMetres) {
+        //CrossReference with training data
+        AnchorPOJO currentAnchor = null;
 
+        for(AnchorPOJO anchor : mTrainingData.anchorList){
+            if(anchor.id.equalsIgnoreCase(id) && anchor.type == IConstants.ANCHOR_TYPE.BLE){
+                currentAnchor = anchor;
+                break;
+            }
+        }
+
+        if(currentAnchor == null){
+            //No matching anchor found in training data
+            return;
+        }
+
+        PointF anchorLocation = new PointF(currentAnchor.x, currentAnchor.y);
+
+        PointF newLocation = pullBack(anchorLocation, currentPosition, (float)distanceInMetres);
+
+        Log.d(TAG, "onNfcTagScanned. Position.x ="+newLocation.x+"  :Position.y="+newLocation.y);
+
+        sendPosition(newLocation);
+    }
+
+    private PointF pullBack(PointF anchorLocation, PointF currentLocation, float distanceInMteres){
+        //Get the distance between current and anchorLocation
+
+        double originalDistance = Math.sqrt(Math.pow((anchorLocation.x - currentLocation.x), 2)
+                +Math.pow((anchorLocation.y - currentLocation.y), 2));
+
+        if(originalDistance == 0 || originalDistance< distanceInMteres){
+            //No change in pulled-back location
+            return currentLocation;
+        }
+
+        PointF pulledBackLocation = new PointF();
+        pulledBackLocation.x = anchorLocation.x + (float)((currentLocation.x - anchorLocation.x)/originalDistance)* distanceInMteres;
+        pulledBackLocation.y = anchorLocation.y + (float)((currentLocation.y - anchorLocation.y)/originalDistance)* distanceInMteres;
+
+        return pulledBackLocation;
+
+    }
+
+    private void sendPosition(PointF position){
+        for(PositionListener currentListener : mListeners){
+            currentListener.onPositionChanged(position);
+        }
     }
 }

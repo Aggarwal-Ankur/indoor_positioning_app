@@ -33,6 +33,7 @@ import com.aggarwalankur.indoor_positioning.common.IConstants;
 import com.aggarwalankur.indoor_positioning.core.ble.BLEScanHelper;
 import com.aggarwalankur.indoor_positioning.core.direction.DirectionHelper;
 import com.aggarwalankur.indoor_positioning.core.listeners.BleScanListener;
+import com.aggarwalankur.indoor_positioning.core.listeners.PositionListener;
 import com.aggarwalankur.indoor_positioning.core.listeners.SelectedAnchorListener;
 import com.aggarwalankur.indoor_positioning.core.nfc.NfcHelper;
 import com.aggarwalankur.indoor_positioning.core.positioning.PositioningManager;
@@ -48,7 +49,7 @@ import com.aggarwalankur.indoor_positioning.fragments.WifiListDialogFragment;
 import java.util.ArrayList;
 
 public class MapActivity extends AppCompatActivity implements WiFiListener, View.OnClickListener
-        , SelectedAnchorListener, BleScanListener {
+        , SelectedAnchorListener, BleScanListener, PositionListener {
 
     private final String TAG = "MapActivity";
 
@@ -163,6 +164,7 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
             stepDetector = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
 
             mPositionManager = PositioningManager.getInstance();
+            mPositionManager.startLocationTracking();
 
         }
 
@@ -284,7 +286,7 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
             mStepDetectionHelper = StepDetector.getInstance();
             mSensorManager.registerListener(mStepDetectionHelper, stepDetector, SensorManager.SENSOR_DELAY_NORMAL);
 
-            mPositionManager.startLocationTracking();
+            mPositionManager.addListener(this);
         }else if(mMode == IConstants.MAP_ACTIVITY_MODES.MODE_SET_ANCHORS){
             BLEScanHelper.getInstance().addListener(this);
         }
@@ -301,7 +303,7 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
 
             mBluetoothLeScanner.stopScan(BLEScanHelper.getInstance());
 
-            mPositionManager.stopLocationTracking();
+            mPositionManager.removeListener(this);
         }else if(mMode == IConstants.MAP_ACTIVITY_MODES.MODE_SET_ANCHORS){
             BLEScanHelper.getInstance().removeListener(this);
         }
@@ -399,6 +401,11 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
     @Override
     protected void onDestroy() {
         WifiHelper.getInstance().removeListener(this, this);
+
+        if(mMode == IConstants.MAP_ACTIVITY_MODES.INDOOR_POSITIONING){
+            mPositionManager.stopLocationTracking();
+        }
+
         super.onDestroy();
     }
 
@@ -521,5 +528,10 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
     public void onBleDeviceScanned(String id, long timestamp, double distanceInMeters) {
         bleTempId = id;
         //Toast.makeText(this, "BLE Device found: "+ id, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onPositionChanged(PointF point) {
+        mapFragment.getPanelData().addIamHereDataPoint(point);
     }
 }
