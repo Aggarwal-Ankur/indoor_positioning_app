@@ -1,5 +1,6 @@
 package com.aggarwalankur.indoor_positioning.core.positioning;
 
+import android.content.Context;
 import android.graphics.PointF;
 import android.util.Log;
 
@@ -85,7 +86,7 @@ public class PositioningManager implements NfcListener, WiFiListener
         }
     }
 
-    public void startLocationTracking(){
+    public void startLocationTracking(Context context){
         //Fetch the latest training Data
         mTrainingData = TrainingDataManager.getInstance().getData();
 
@@ -95,11 +96,11 @@ public class PositioningManager implements NfcListener, WiFiListener
         NfcHelper.getInstance().addListener(this);
 
         //Make sure that this does not get called before the wifi is initialized
-        WifiHelper.getInstance().addListener(this, null);
+        WifiHelper.getInstance().addListener(this, context);
 
         StepDetector.getInstance().addListener(this);
 
-        DirectionHelper.getInstance(null).addListener(this);
+        DirectionHelper.getInstance(context).addListener(this);
 
         BLEScanHelper.getInstance().addListener(this);
     }
@@ -294,6 +295,10 @@ public class PositioningManager implements NfcListener, WiFiListener
 
     @Override
     public void onNfcTagScanned(String id, long timestamp) {
+        if(currentPosition == null ){
+            return;
+        }
+
         //CrossReference with training data
 
         AnchorPOJO currentAnchor = null;
@@ -322,6 +327,10 @@ public class PositioningManager implements NfcListener, WiFiListener
 
     @Override
     public void onBleDeviceScanned(String id, long timestamp, double distanceInMetres) {
+        if(currentPosition == null ){
+            return;
+        }
+
         //CrossReference with training data
         AnchorPOJO currentAnchor = null;
 

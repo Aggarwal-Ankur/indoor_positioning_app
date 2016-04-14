@@ -96,6 +96,8 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
 
     private String bleTempId = "";
 
+    Snackbar snackbar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -164,7 +166,16 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
             stepDetector = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
 
             mPositionManager = PositioningManager.getInstance();
-            mPositionManager.startLocationTracking();
+            mPositionManager.startLocationTracking(this);
+
+
+            snackbar = Snackbar
+                    .make(findViewById(android.R.id.content), "Waiting for network connection", Snackbar.LENGTH_INDEFINITE);
+            View snackbarView = snackbar.getView();
+            TextView textView = (TextView) snackbarView.findViewById(android.support.design.R.id.snackbar_text);
+            textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+            textView.setTextColor(Color.LTGRAY);
+            snackbar.show();
 
         }
 
@@ -532,6 +543,10 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
 
     @Override
     public void onPositionChanged(PointF point) {
+        if(snackbar.isShown()){
+            snackbar.dismiss();
+        }
+
         mapFragment.getPanelData().addIamHereDataPoint(point);
     }
 }

@@ -2,13 +2,16 @@ package com.aggarwalankur.indoor_positioning.fragments;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.support.annotation.Nullable;
 import android.app.Fragment;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.TextView;
 
 import com.aggarwalankur.indoor_positioning.R;
 import com.aggarwalankur.indoor_positioning.common.IConstants;
@@ -73,7 +76,6 @@ public class MapFragment extends Fragment {
 
         mPanel.setAnchorList((ArrayList<AnchorPOJO>) trainingData.anchorList.clone());
         mPanel.setWifiDataPointList(TrainingDataManager.getInstance().getData().getDataLocationPoints());
-
 
         return v;
     }

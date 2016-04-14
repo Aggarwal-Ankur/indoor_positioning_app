@@ -35,4 +35,12 @@ public interface IConstants {
         int MODE_TRAIN_WIFI = 2001;
         int INDOOR_POSITIONING = 2002;
     }
+
+    interface WEBSERVICE_CONSTANTS{
+        String URL = "http://192.168.244.51";
+
+        String PORTNO = "8999";
+
+        String WEBSERVICE_URI = "indoor_position_webservice/Positioning";
+    }
 }
