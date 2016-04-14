@@ -2,6 +2,7 @@ package com.aggarwalankur.indoor_positioning.core.positioning;
 
 import android.content.Context;
 import android.graphics.PointF;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import com.aggarwalankur.indoor_positioning.common.IConstants;
@@ -23,6 +24,13 @@ import com.aggarwalankur.indoor_positioning.core.wifi.WiFiListener;
 import com.aggarwalankur.indoor_positioning.core.wifi.WifiHelper;
 import com.aggarwalankur.indoor_positioning.core.wifi.WifiScanResult;
 
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -60,6 +68,13 @@ public class PositioningManager implements NfcListener, WiFiListener
     private int direction = -1;
 
     private ArrayList<PositionListener> mListeners;
+
+    private AsyncTask mWifiAsyncTask ;
+
+
+    private String urlString = IConstants.WEBSERVICE_CONSTANTS.URL + ":"
+            + IConstants.WEBSERVICE_CONSTANTS.PORTNO
+            + IConstants.WEBSERVICE_CONSTANTS.WEBSERVICE_URI;
 
     private PositioningManager(){
         wifiAccumulatedPoint = new WiFiDataPoint();
@@ -106,6 +121,12 @@ public class PositioningManager implements NfcListener, WiFiListener
     }
 
     public void stopLocationTracking(){
+        //Stop Wifi tracking as well
+        if(mWifiAsyncTask != null && mWifiAsyncTask.getStatus()== AsyncTask.Status.RUNNING){
+            mWifiAsyncTask.cancel(true);
+        }
+
+
         //De-Register all listeners
 
         NfcHelper.getInstance().removeListener(this);
@@ -176,6 +197,14 @@ public class PositioningManager implements NfcListener, WiFiListener
             return;
         }
 
+
+        //reference web service for position
+
+        //Step 1: convert accumulated data to String
+
+        String wifiDataJson = getWiFiDataString(wifiAccumulatedPoint.wifiData);
+        mWifiAsyncTask = new WiFiAsyncTask();
+        mWifiAsyncTask.execute(new String[]{wifiDataJson});
 
         /*//CrossReference with training data
 
@@ -374,9 +403,121 @@ public class PositioningManager implements NfcListener, WiFiListener
 
     }
 
+    /**
+     * Helper function to send the calculated position to UI
+     */
     private void sendPosition(PointF position){
         for(PositionListener currentListener : mListeners){
             currentListener.onPositionChanged(position);
         }
     }
+
+    /**
+     *  Helper function to convert Wi-Fi Data to String
+     */
+    public String getWiFiDataString(ArrayList<WifiDataPOJO> wifiData){
+
+        /*
+        Structure is
+        { "wifiDataPointList" :{
+            "wifiDataPoint" : [
+                {"bssid":"bssidValue","rssi":"rssivalue"},
+                {"bssid":"bssidValue","rssi":"rssivalue"},
+                {"bssid":"bssidValue","rssi":"rssivalue"}
+            ]
+            }
+        }
+         */
+
+        StringBuffer buf = new StringBuffer();
+        buf.append("{\"wifiDataPointList\" : { \"wifiDataPoint\" : [");
+
+        for(int i=0; i<wifiData.size(); i++){
+            WifiDataPOJO currentWifidata = wifiData.get(i);
+
+            buf.append("{\"bssid\":\""+currentWifidata.bssid+"\", \"rssi\":\""+ currentWifidata.rssi+"\"}");
+
+            if(i<wifiData.size() -1){
+                buf.append(",");
+            }
+        }
+
+        buf.append("]}}");
+
+        String returnString = buf.toString();
+        return returnString;
+    }
+
+
+    private class WiFiAsyncTask extends AsyncTask<String, Void, PointF>{
+        @Override
+        protected PointF doInBackground(String... strings) {
+
+
+
+            PointF position = null;
+
+            try{
+                //Make the URL connection first
+                URL url = new URL(urlString);
+                URLConnection connection = url.openConnection();
+
+                String wifiJsonString = strings [0];
+
+                connection.setDoOutput(true);
+                OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream());
+                out.write(wifiJsonString);
+                out.close();
+
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+
+                String returnString="";
+
+
+                while ((returnString = in.readLine()) != null){
+                    //returnString would contain the position. Format is:
+
+                    /* {"positionData" :
+                            { "x" : "xValue", "y":"yValue" }
+                       }
+                    */
+                    final JSONObject obj = new JSONObject(returnString);
+                    final JSONObject positionData = obj.getJSONObject("positionData");
+
+                    float x= (float)positionData.getDouble("x");
+                    float y= (float)positionData.getDouble("y");
+
+                    Log.d(TAG, "x="+x);
+                    Log.d(TAG, "y="+y);
+
+                    position = new PointF(x, y);
+                }
+                in.close();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+
+            return position;
+        }
+
+        @Override
+        protected void onPostExecute(PointF position) {
+            if(isCancelled() || position == null){
+                return;
+            }
+
+            //Else, set the position
+            if(currentPosition.x == position.x && currentPosition.y == position.y){
+                return;
+            }
+
+            currentPosition = position;
+
+            sendPosition(currentPosition);
+        }
+    }
+
+
+
 }

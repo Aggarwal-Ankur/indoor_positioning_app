@@ -41,6 +41,6 @@ public interface IConstants {
 
         String PORTNO = "8999";
 
-        String WEBSERVICE_URI = "indoor_position_webservice/Positioning";
+        String WEBSERVICE_URI = "/indoor_position_webservice/Positioning";
     }
 }
