@@ -51,6 +51,7 @@ public class MapXmlPullParser {
     private TrainingDataPOJO trainingData;
 
 
+
     public synchronized TrainingDataPOJO parseXml(File file) throws XmlPullParserException, IOException {
         //Build the requisites
         XmlPullParserFactory factory = XmlPullParserFactory.newInstance();

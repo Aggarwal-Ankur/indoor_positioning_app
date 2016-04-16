@@ -170,7 +170,7 @@ public class MapActivity extends AppCompatActivity implements WiFiListener, View
 
 
             snackbar = Snackbar
-                    .make(findViewById(android.R.id.content), "Waiting for network connection", Snackbar.LENGTH_INDEFINITE);
+                    .make(findViewById(android.R.id.content), "Waiting for server connection", Snackbar.LENGTH_INDEFINITE);
             View snackbarView = snackbar.getView();
             TextView textView = (TextView) snackbarView.findViewById(android.support.design.R.id.snackbar_text);
             textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);

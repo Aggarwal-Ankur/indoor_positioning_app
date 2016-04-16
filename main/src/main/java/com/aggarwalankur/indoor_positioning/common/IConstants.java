@@ -37,10 +37,10 @@ public interface IConstants {
     }
 
     interface WEBSERVICE_CONSTANTS{
-        String URL = "http://192.168.244.51";
+        String URL = "http://192.168.241.31";
 
         String PORTNO = "8999";
 
-        String WEBSERVICE_URI = "/indoor_position_webservice/Positioning";
+        String WEBSERVICE_URI = "/indoor_position_webservice/ConnectionManager";
     }
 }
